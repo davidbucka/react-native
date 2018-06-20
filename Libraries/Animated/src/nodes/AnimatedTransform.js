@@ -1,9 +1,12 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
+ * @providesModule AnimatedTransform
  * @flow
  * @format
  */
@@ -14,9 +17,9 @@ const AnimatedWithChildren = require('./AnimatedWithChildren');
 const NativeAnimatedHelper = require('../NativeAnimatedHelper');
 
 class AnimatedTransform extends AnimatedWithChildren {
-  _transforms: $ReadOnlyArray<Object>;
+  _transforms: Array<Object>;
 
-  constructor(transforms: $ReadOnlyArray<Object>) {
+  constructor(transforms: Array<Object>) {
     super();
     this._transforms = transforms;
   }
@@ -33,7 +36,7 @@ class AnimatedTransform extends AnimatedWithChildren {
     });
   }
 
-  __getValue(): $ReadOnlyArray<Object> {
+  __getValue(): Array<Object> {
     return this._transforms.map(transform => {
       const result = {};
       for (const key in transform) {
@@ -48,7 +51,7 @@ class AnimatedTransform extends AnimatedWithChildren {
     });
   }
 
-  __getAnimatedValue(): $ReadOnlyArray<Object> {
+  __getAnimatedValue(): Array<Object> {
     return this._transforms.map(transform => {
       const result = {};
       for (const key in transform) {

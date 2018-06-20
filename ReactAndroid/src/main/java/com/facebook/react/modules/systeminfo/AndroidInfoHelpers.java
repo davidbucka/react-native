@@ -1,7 +1,4 @@
-// Copyright (c) 2004-present, Facebook, Inc.
-
-// This source code is licensed under the MIT license found in the
-// LICENSE file in the root directory of this source tree.
+// Copyright 2004-present Facebook. All Rights Reserved.
 
 package com.facebook.react.modules.systeminfo;
 
@@ -34,7 +31,6 @@ public class AndroidInfoHelpers {
     return getServerIpAddress(INSPECTOR_PROXY_PORT);
   }
 
-  // WARNING(festevezga): This RN helper method has been copied to another FB-only target. Any changes should be applied to both.
   public static String getFriendlyDeviceName() {
     if (isRunningOnGenymotion()) {
       // Genymotion already has a friendly name by default

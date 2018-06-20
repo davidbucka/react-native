@@ -9,7 +9,6 @@ LOCAL_SRC_FILES := \
   CatalystInstanceImpl.cpp \
   CxxModuleWrapper.cpp \
   JavaModuleWrapper.cpp \
-  JReactMarker.cpp \
   JMessageQueueThread.cpp \
   JSCPerfLogging.cpp \
   JSLoader.cpp \
@@ -19,7 +18,6 @@ LOCAL_SRC_FILES := \
   ModuleRegistryBuilder.cpp \
   NativeArray.cpp \
   NativeCommon.cpp \
-  NativeDeltaClient.cpp \
   NativeMap.cpp \
   OnLoad.cpp \
   ProxyExecutor.cpp \
@@ -37,13 +35,12 @@ LOCAL_CFLAGS += $(CXX11_FLAGS)
 LOCAL_EXPORT_CPPFLAGS := $(CXX11_FLAGS)
 
 LOCAL_LDLIBS += -landroid
-LOCAL_SHARED_LIBRARIES := libfolly_json libfbjni libjsc libglog_init libyoga libprivatedata
+LOCAL_SHARED_LIBRARIES := libfolly_json libfbjni libjsc libglog_init libyoga
 LOCAL_STATIC_LIBRARIES := libreactnative
 
 include $(BUILD_SHARED_LIBRARY)
 
 $(call import-module,cxxreact)
-$(call import-module,privatedata)
 $(call import-module,fb)
 $(call import-module,fbgloginit)
 $(call import-module,folly)

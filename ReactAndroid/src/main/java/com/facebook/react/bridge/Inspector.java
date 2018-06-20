@@ -1,7 +1,4 @@
-// Copyright (c) 2004-present, Facebook, Inc.
-
-// This source code is licensed under the MIT license found in the
-// LICENSE file in the root directory of this source tree.
+// Copyright 2004-present Facebook. All Rights Reserved.
 
 package com.facebook.react.bridge;
 
@@ -54,7 +51,6 @@ public class Inspector {
   public static class Page {
     private final int mId;
     private final String mTitle;
-    private final String mVM;
 
     public int getId() {
       return mId;
@@ -62,10 +58,6 @@ public class Inspector {
 
     public String getTitle() {
       return mTitle;
-    }
-
-    public String getVM() {
-      return mVM;
     }
 
     @Override
@@ -77,10 +69,9 @@ public class Inspector {
     }
 
     @DoNotStrip
-    private Page(int id, String title, String vm) {
+    private Page(int id, String title) {
       mId = id;
       mTitle = title;
-      mVM = vm;
     }
   }
 

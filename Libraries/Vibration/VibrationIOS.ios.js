@@ -1,18 +1,19 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @format
+ * @providesModule VibrationIOS
  * @flow
  */
-
 'use strict';
 
-const RCTVibration = require('NativeModules').Vibration;
+var RCTVibration = require('NativeModules').Vibration;
 
-const invariant = require('fbjs/lib/invariant');
+var invariant = require('fbjs/lib/invariant');
 
 /**
  * NOTE: `VibrationIOS` is being deprecated. Use `Vibration` instead.
@@ -27,14 +28,17 @@ const invariant = require('fbjs/lib/invariant');
  * Vibration patterns are currently unsupported.
  */
 
-const VibrationIOS = {
+var VibrationIOS = {
   /**
    * @deprecated
    */
   vibrate: function() {
-    invariant(arguments[0] === undefined, 'Vibration patterns not supported.');
+    invariant(
+      arguments[0] === undefined,
+      'Vibration patterns not supported.'
+    );
     RCTVibration.vibrate();
-  },
+  }
 };
 
 module.exports = VibrationIOS;

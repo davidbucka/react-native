@@ -1,8 +1,10 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  */
 
 package com.facebook.react.modules.dialog;
@@ -26,7 +28,6 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.module.annotations.ReactModule;
 
@@ -94,7 +95,6 @@ public class DialogModule extends ReactContextBaseJavaModule implements Lifecycl
     }
 
     public void showPendingAlert() {
-      UiThreadUtil.assertOnUiThread();
       if (mFragmentToShow == null) {
         return;
       }
@@ -123,8 +123,6 @@ public class DialogModule extends ReactContextBaseJavaModule implements Lifecycl
     }
 
     public void showNewAlert(boolean isInForeground, Bundle arguments, Callback actionCallback) {
-      UiThreadUtil.assertOnUiThread();
-
       dismissExisting();
 
       AlertFragmentListener actionListener =
@@ -220,8 +218,8 @@ public class DialogModule extends ReactContextBaseJavaModule implements Lifecycl
   public void showAlert(
       ReadableMap options,
       Callback errorCallback,
-      final Callback actionCallback) {
-    final FragmentManagerHelper fragmentManagerHelper = getFragmentManagerHelper();
+      Callback actionCallback) {
+    FragmentManagerHelper fragmentManagerHelper = getFragmentManagerHelper();
     if (fragmentManagerHelper == null) {
       errorCallback.invoke("Tried to show an alert while not attached to an Activity");
       return;
@@ -255,13 +253,7 @@ public class DialogModule extends ReactContextBaseJavaModule implements Lifecycl
       args.putBoolean(KEY_CANCELABLE, options.getBoolean(KEY_CANCELABLE));
     }
 
-    UiThreadUtil.runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        fragmentManagerHelper.showNewAlert(mIsInForeground, args, actionCallback);
-      }
-    });
-
+    fragmentManagerHelper.showNewAlert(mIsInForeground, args, actionCallback);
   }
 
   /**

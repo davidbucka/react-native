@@ -1,7 +1,4 @@
-// Copyright (c) 2004-present, Facebook, Inc.
-
-// This source code is licensed under the MIT license found in the
-// LICENSE file in the root directory of this source tree.
+// Copyright 2004-present Facebook. All Rights Reserved.
 
 package com.facebook.react;
 
@@ -80,7 +77,19 @@ public class NativeModuleRegistryBuilder {
         }
 
         String name = moduleHolder.getName();
-        putModuleTypeAndHolderToModuleMaps(type, name, moduleHolder);
+        if (namesToType.containsKey(name)) {
+          Class<? extends NativeModule> existingNativeModule = namesToType.get(name);
+          if (!moduleHolder.getCanOverrideExistingModule()) {
+            throw new IllegalStateException("Native module " + type.getSimpleName() +
+              " tried to override " + existingNativeModule.getSimpleName() + " for module name " +
+              name + ". If this was your intention, set canOverrideExistingModule=true");
+          }
+
+          mModules.remove(existingNativeModule);
+        }
+
+        namesToType.put(name, type);
+        mModules.put(type, moduleHolder);
       }
     } else {
       FLog.d(
@@ -105,25 +114,19 @@ public class NativeModuleRegistryBuilder {
   public void addNativeModule(NativeModule nativeModule) {
     String name = nativeModule.getName();
     Class<? extends NativeModule> type = nativeModule.getClass();
-    putModuleTypeAndHolderToModuleMaps(type, name, new ModuleHolder(nativeModule));
-  }
-
-  private void putModuleTypeAndHolderToModuleMaps(Class<? extends NativeModule> type, String underName,
-                                                  ModuleHolder moduleHolder) throws IllegalStateException {
-    if (namesToType.containsKey(underName)) {
-      Class<? extends NativeModule> existingNativeModule = namesToType.get(underName);
-      if (!moduleHolder.getCanOverrideExistingModule()) {
+    if (namesToType.containsKey(name)) {
+      Class<? extends NativeModule> existingModule = namesToType.get(name);
+      if (!nativeModule.canOverrideExistingModule()) {
         throw new IllegalStateException("Native module " + type.getSimpleName() +
-          " tried to override " + existingNativeModule.getSimpleName() + " for module name " +
-          underName + ". Check the getPackages() method in MainApplication.java, it might be " +
-          "that module is being created twice. " +
-          "If this was your intention, set canOverrideExistingModule=true");
+          " tried to override " + existingModule.getSimpleName() + " for module name " +
+          name + ". If this was your intention, set canOverrideExistingModule=true");
       }
 
-      mModules.remove(existingNativeModule);
+      mModules.remove(existingModule);
     }
 
-    namesToType.put(underName, type);
+    namesToType.put(name, type);
+    ModuleHolder moduleHolder = new ModuleHolder(nativeModule);
     mModules.put(type, moduleHolder);
   }
 

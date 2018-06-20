@@ -1,8 +1,10 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  */
 
 package com.facebook.react.shell;
@@ -28,7 +30,6 @@ import com.facebook.react.module.model.ReactModuleInfoProvider;
 import com.facebook.react.modules.accessibilityinfo.AccessibilityInfoModule;
 import com.facebook.react.modules.appstate.AppStateModule;
 import com.facebook.react.modules.blob.BlobModule;
-import com.facebook.react.modules.blob.FileReaderModule;
 import com.facebook.react.modules.camera.CameraRollManager;
 import com.facebook.react.modules.camera.ImageEditingManager;
 import com.facebook.react.modules.camera.ImageStoreManager;
@@ -60,7 +61,6 @@ import com.facebook.react.views.modal.ReactModalHostManager;
 import com.facebook.react.views.picker.ReactDialogPickerManager;
 import com.facebook.react.views.picker.ReactDropdownPickerManager;
 import com.facebook.react.views.progressbar.ReactProgressBarViewManager;
-import com.facebook.react.views.scroll.ReactHorizontalScrollContainerViewManager;
 import com.facebook.react.views.scroll.ReactHorizontalScrollViewManager;
 import com.facebook.react.views.scroll.ReactScrollViewManager;
 import com.facebook.react.views.slider.ReactSliderManager;
@@ -100,7 +100,7 @@ public class MainReactPackage extends LazyReactPackage {
   @Override
   public List<ModuleSpec> getNativeModules(final ReactApplicationContext context) {
     return Arrays.asList(
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             AccessibilityInfoModule.class,
             new Provider<NativeModule>() {
               @Override
@@ -108,7 +108,7 @@ public class MainReactPackage extends LazyReactPackage {
                 return new AccessibilityInfoModule(context);
               }
             }),
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             AppStateModule.class,
             new Provider<NativeModule>() {
               @Override
@@ -116,7 +116,7 @@ public class MainReactPackage extends LazyReactPackage {
                 return new AppStateModule(context);
               }
             }),
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             BlobModule.class,
             new Provider<NativeModule>() {
               @Override
@@ -124,15 +124,7 @@ public class MainReactPackage extends LazyReactPackage {
                 return new BlobModule(context);
               }
             }),
-        ModuleSpec.nativeModuleSpec(
-            FileReaderModule.class,
-            new Provider<NativeModule>() {
-              @Override
-              public NativeModule get() {
-                return new FileReaderModule(context);
-              }
-            }),
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             AsyncStorageModule.class,
             new Provider<NativeModule>() {
               @Override
@@ -140,7 +132,7 @@ public class MainReactPackage extends LazyReactPackage {
                 return new AsyncStorageModule(context);
               }
             }),
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             CameraRollManager.class,
             new Provider<NativeModule>() {
               @Override
@@ -148,7 +140,7 @@ public class MainReactPackage extends LazyReactPackage {
                 return new CameraRollManager(context);
               }
             }),
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             ClipboardModule.class,
             new Provider<NativeModule>() {
               @Override
@@ -156,7 +148,7 @@ public class MainReactPackage extends LazyReactPackage {
                 return new ClipboardModule(context);
               }
             }),
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             DatePickerDialogModule.class,
             new Provider<NativeModule>() {
               @Override
@@ -164,7 +156,7 @@ public class MainReactPackage extends LazyReactPackage {
                 return new DatePickerDialogModule(context);
               }
             }),
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             DialogModule.class,
             new Provider<NativeModule>() {
               @Override
@@ -172,7 +164,7 @@ public class MainReactPackage extends LazyReactPackage {
                 return new DialogModule(context);
               }
             }),
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             FrescoModule.class,
             new Provider<NativeModule>() {
               @Override
@@ -181,7 +173,7 @@ public class MainReactPackage extends LazyReactPackage {
                     context, true, mConfig != null ? mConfig.getFrescoConfig() : null);
               }
             }),
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             I18nManagerModule.class,
             new Provider<NativeModule>() {
               @Override
@@ -189,7 +181,7 @@ public class MainReactPackage extends LazyReactPackage {
                 return new I18nManagerModule(context);
               }
             }),
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             ImageEditingManager.class,
             new Provider<NativeModule>() {
               @Override
@@ -197,7 +189,7 @@ public class MainReactPackage extends LazyReactPackage {
                 return new ImageEditingManager(context);
               }
             }),
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             ImageLoaderModule.class,
             new Provider<NativeModule>() {
               @Override
@@ -205,7 +197,7 @@ public class MainReactPackage extends LazyReactPackage {
                 return new ImageLoaderModule(context);
               }
             }),
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             ImageStoreManager.class,
             new Provider<NativeModule>() {
               @Override
@@ -213,7 +205,7 @@ public class MainReactPackage extends LazyReactPackage {
                 return new ImageStoreManager(context);
               }
             }),
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             IntentModule.class,
             new Provider<NativeModule>() {
               @Override
@@ -221,7 +213,7 @@ public class MainReactPackage extends LazyReactPackage {
                 return new IntentModule(context);
               }
             }),
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             LocationModule.class,
             new Provider<NativeModule>() {
               @Override
@@ -229,7 +221,7 @@ public class MainReactPackage extends LazyReactPackage {
                 return new LocationModule(context);
               }
             }),
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             NativeAnimatedModule.class,
             new Provider<NativeModule>() {
               @Override
@@ -237,7 +229,7 @@ public class MainReactPackage extends LazyReactPackage {
                 return new NativeAnimatedModule(context);
               }
             }),
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             NetworkingModule.class,
             new Provider<NativeModule>() {
               @Override
@@ -245,7 +237,7 @@ public class MainReactPackage extends LazyReactPackage {
                 return new NetworkingModule(context);
               }
             }),
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             NetInfoModule.class,
             new Provider<NativeModule>() {
               @Override
@@ -253,7 +245,7 @@ public class MainReactPackage extends LazyReactPackage {
                 return new NetInfoModule(context);
               }
             }),
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             PermissionsModule.class,
             new Provider<NativeModule>() {
               @Override
@@ -261,7 +253,7 @@ public class MainReactPackage extends LazyReactPackage {
                 return new PermissionsModule(context);
               }
             }),
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             ShareModule.class,
             new Provider<NativeModule>() {
               @Override
@@ -269,7 +261,7 @@ public class MainReactPackage extends LazyReactPackage {
                 return new ShareModule(context);
               }
             }),
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             StatusBarModule.class,
             new Provider<NativeModule>() {
               @Override
@@ -277,7 +269,7 @@ public class MainReactPackage extends LazyReactPackage {
                 return new StatusBarModule(context);
               }
             }),
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             TimePickerDialogModule.class,
             new Provider<NativeModule>() {
               @Override
@@ -285,7 +277,7 @@ public class MainReactPackage extends LazyReactPackage {
                 return new TimePickerDialogModule(context);
               }
             }),
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             ToastModule.class,
             new Provider<NativeModule>() {
               @Override
@@ -293,7 +285,7 @@ public class MainReactPackage extends LazyReactPackage {
                 return new ToastModule(context);
               }
             }),
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             VibrationModule.class,
             new Provider<NativeModule>() {
               @Override
@@ -301,7 +293,7 @@ public class MainReactPackage extends LazyReactPackage {
                 return new VibrationModule(context);
               }
             }),
-        ModuleSpec.nativeModuleSpec(
+        new ModuleSpec(
             WebSocketModule.class,
             new Provider<NativeModule>() {
               @Override
@@ -323,7 +315,6 @@ public class MainReactPackage extends LazyReactPackage {
     viewManagers.add(new ReactDrawerLayoutManager());
     viewManagers.add(new ReactDropdownPickerManager());
     viewManagers.add(new ReactHorizontalScrollViewManager());
-    viewManagers.add(new ReactHorizontalScrollContainerViewManager());
     viewManagers.add(new ReactProgressBarViewManager());
     viewManagers.add(new ReactScrollViewManager());
     viewManagers.add(new ReactSliderManager());

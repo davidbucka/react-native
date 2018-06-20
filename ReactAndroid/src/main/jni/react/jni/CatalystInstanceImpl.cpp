@@ -1,27 +1,19 @@
-// Copyright (c) 2004-present, Facebook, Inc.
-
-// This source code is licensed under the MIT license found in the
-// LICENSE file in the root directory of this source tree.
+// Copyright 2004-present Facebook. All Rights Reserved.
 
 #include "CatalystInstanceImpl.h"
 
 #include <mutex>
 #include <condition_variable>
-#include <sstream>
-#include <vector>
 
 #include <cxxreact/CxxNativeModule.h>
 #include <cxxreact/Instance.h>
 #include <cxxreact/JSBigString.h>
 #include <cxxreact/JSBundleType.h>
-#include <cxxreact/JSDeltaBundleClient.h>
 #include <cxxreact/JSIndexedRAMBundle.h>
 #include <cxxreact/MethodCall.h>
-#include <cxxreact/ModuleRegistry.h>
 #include <cxxreact/RecoverableError.h>
-#include <cxxreact/RAMBundleRegistry.h>
+#include <cxxreact/ModuleRegistry.h>
 #include <fb/log.h>
-#include <fb/fbjni/ByteBuffer.h>
 #include <folly/dynamic.h>
 #include <folly/Memory.h>
 #include <jni/Countable.h>
@@ -29,8 +21,8 @@
 
 #include "CxxModuleWrapper.h"
 #include "JavaScriptExecutorHolder.h"
-#include "JNativeRunnable.h"
 #include "JniJSModulesUnbundle.h"
+#include "JNativeRunnable.h"
 #include "NativeArray.h"
 
 using namespace facebook::jni;
@@ -96,6 +88,9 @@ CatalystInstanceImpl::~CatalystInstanceImpl() {
   if (moduleMessageQueue_ != NULL) {
     moduleMessageQueue_->quitSynchronous();
   }
+  if (uiBackgroundMessageQueue_ != NULL) {
+    uiBackgroundMessageQueue_->quitSynchronous();
+  }
 }
 
 void CatalystInstanceImpl::registerNatives() {
@@ -104,10 +99,8 @@ void CatalystInstanceImpl::registerNatives() {
     makeNativeMethod("initializeBridge", CatalystInstanceImpl::initializeBridge),
     makeNativeMethod("jniExtendNativeModules", CatalystInstanceImpl::extendNativeModules),
     makeNativeMethod("jniSetSourceURL", CatalystInstanceImpl::jniSetSourceURL),
-    makeNativeMethod("jniRegisterSegment", CatalystInstanceImpl::jniRegisterSegment),
     makeNativeMethod("jniLoadScriptFromAssets", CatalystInstanceImpl::jniLoadScriptFromAssets),
     makeNativeMethod("jniLoadScriptFromFile", CatalystInstanceImpl::jniLoadScriptFromFile),
-    makeNativeMethod("jniLoadScriptFromDeltaBundle", CatalystInstanceImpl::jniLoadScriptFromDeltaBundle),
     makeNativeMethod("jniCallJSFunction", CatalystInstanceImpl::jniCallJSFunction),
     makeNativeMethod("jniCallJSCallback", CatalystInstanceImpl::jniCallJSCallback),
     makeNativeMethod("setGlobalVariable", CatalystInstanceImpl::setGlobalVariable),
@@ -124,11 +117,15 @@ void CatalystInstanceImpl::initializeBridge(
     JavaScriptExecutorHolder* jseh,
     jni::alias_ref<JavaMessageQueueThread::javaobject> jsQueue,
     jni::alias_ref<JavaMessageQueueThread::javaobject> nativeModulesQueue,
+    jni::alias_ref<JavaMessageQueueThread::javaobject> uiBackgroundQueue,
     jni::alias_ref<jni::JCollection<JavaModuleWrapper::javaobject>::javaobject> javaModules,
     jni::alias_ref<jni::JCollection<ModuleHolder::javaobject>::javaobject> cxxModules) {
   // TODO mhorowitz: how to assert here?
   // Assertions.assertCondition(mBridge == null, "initializeBridge should be called once");
   moduleMessageQueue_ = std::make_shared<JMessageQueueThread>(nativeModulesQueue);
+  if (uiBackgroundQueue.get() != nullptr) {
+    uiBackgroundMessageQueue_ = std::make_shared<JMessageQueueThread>(uiBackgroundQueue);
+  }
 
   // This used to be:
   //
@@ -151,12 +148,13 @@ void CatalystInstanceImpl::initializeBridge(
        std::weak_ptr<Instance>(instance_),
        javaModules,
        cxxModules,
-       moduleMessageQueue_));
+       moduleMessageQueue_,
+       uiBackgroundMessageQueue_));
 
   instance_->initializeBridge(
     folly::make_unique<JInstanceCallback>(
     callback,
-    moduleMessageQueue_),
+    uiBackgroundMessageQueue_ != NULL ? uiBackgroundMessageQueue_ : moduleMessageQueue_),
     jseh->getExecutorFactory(),
     folly::make_unique<JMessageQueueThread>(jsQueue),
     moduleRegistry_);
@@ -169,15 +167,12 @@ void CatalystInstanceImpl::extendNativeModules(
     std::weak_ptr<Instance>(instance_),
     javaModules,
     cxxModules,
-    moduleMessageQueue_));
+    moduleMessageQueue_,
+    uiBackgroundMessageQueue_));
 }
 
 void CatalystInstanceImpl::jniSetSourceURL(const std::string& sourceURL) {
   instance_->setSourceURL(sourceURL);
-}
-
-void CatalystInstanceImpl::jniRegisterSegment(int segmentId, const std::string& path) {
-  instance_->registerBundle((uint32_t)segmentId, path);
 }
 
 void CatalystInstanceImpl::jniLoadScriptFromAssets(
@@ -190,10 +185,8 @@ void CatalystInstanceImpl::jniLoadScriptFromAssets(
   auto manager = extractAssetManager(assetManager);
   auto script = loadScriptFromAssets(manager, sourceURL);
   if (JniJSModulesUnbundle::isUnbundle(manager, sourceURL)) {
-    auto bundle = JniJSModulesUnbundle::fromEntryFile(manager, sourceURL);
-    auto registry = RAMBundleRegistry::singleBundleRegistry(std::move(bundle));
-    instance_->loadRAMBundle(
-      std::move(registry),
+    instance_->loadUnbundle(
+      folly::make_unique<JniJSModulesUnbundle>(manager, sourceURL),
       std::move(script),
       sourceURL,
       loadSynchronously);
@@ -203,11 +196,29 @@ void CatalystInstanceImpl::jniLoadScriptFromAssets(
   }
 }
 
+bool CatalystInstanceImpl::isIndexedRAMBundle(const char *sourcePath) {
+  std::ifstream bundle_stream(sourcePath, std::ios_base::in);
+  if (!bundle_stream) {
+    return false;
+  }
+  BundleHeader header;
+  bundle_stream.read(reinterpret_cast<char *>(&header), sizeof(header));
+  bundle_stream.close();
+  return parseTypeFromHeader(header) == ScriptTag::RAMBundle;
+}
+
 void CatalystInstanceImpl::jniLoadScriptFromFile(const std::string& fileName,
                                                  const std::string& sourceURL,
                                                  bool loadSynchronously) {
-  if (Instance::isIndexedRAMBundle(fileName.c_str())) {
-    instance_->loadRAMBundleFromFile(fileName, sourceURL, loadSynchronously);
+  auto zFileName = fileName.c_str();
+  if (isIndexedRAMBundle(zFileName)) {
+    auto bundle = folly::make_unique<JSIndexedRAMBundle>(zFileName);
+    auto startupScript = bundle->getStartupCode();
+    instance_->loadUnbundle(
+      std::move(bundle),
+      std::move(startupScript),
+      sourceURL,
+      loadSynchronously);
   } else {
     std::unique_ptr<const JSBigFileString> script;
     RecoverableError::runRethrowingAsRecoverable<std::system_error>(
@@ -216,19 +227,6 @@ void CatalystInstanceImpl::jniLoadScriptFromFile(const std::string& fileName,
       });
     instance_->loadScriptFromString(std::move(script), sourceURL, loadSynchronously);
   }
-}
-
-void CatalystInstanceImpl::jniLoadScriptFromDeltaBundle(
-    const std::string& sourceURL,
-    jni::alias_ref<NativeDeltaClient::jhybridobject> jDeltaClient,
-    bool loadSynchronously) {
-
-  auto deltaClient = jDeltaClient->cthis()->getDeltaClient();
-  auto registry = RAMBundleRegistry::singleBundleRegistry(
-    folly::make_unique<JSDeltaBundleClientRAMBundle>(deltaClient));
-
-  instance_->loadRAMBundle(
-    std::move(registry), deltaClient->getStartupCode(), sourceURL, loadSynchronously);
 }
 
 void CatalystInstanceImpl::jniCallJSFunction(std::string module, std::string method, NativeArray* arguments) {
@@ -262,7 +260,9 @@ jlong CatalystInstanceImpl::getJavaScriptContext() {
 }
 
 void CatalystInstanceImpl::handleMemoryPressure(int pressureLevel) {
+  #ifdef WITH_JSC_MEMORY_PRESSURE
   instance_->handleMemoryPressure(pressureLevel);
+  #endif
 }
 
 }}

@@ -1,26 +1,25 @@
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  * @format
- * @emails oncall+javascript_foundation
  */
 
 'use strict';
 
-jest.mock('fs');
-
 const getDependencyConfig = require('../../android').dependencyConfig;
-const fs = require('fs');
+const mockFS = require('mock-fs');
 const mocks = require('../../__fixtures__/android');
 
 const userConfig = {};
 
 describe('android::getDependencyConfig', () => {
   beforeAll(() => {
-    fs.__setMockFilesystem({
+    mockFS({
       empty: {},
       nested: {
         android: {
@@ -39,23 +38,27 @@ describe('android::getDependencyConfig', () => {
   });
 
   it('returns an object with android project configuration', () => {
-    expect(getDependencyConfig('/nested', userConfig)).not.toBeNull();
-    expect(typeof getDependencyConfig('/nested', userConfig)).toBe('object');
+    expect(getDependencyConfig('nested', userConfig)).not.toBeNull();
+    expect(typeof getDependencyConfig('nested', userConfig)).toBe('object');
   });
 
   it('returns `null` if manifest file has not been found', () => {
-    expect(getDependencyConfig('/empty', userConfig)).toBeNull();
+    expect(getDependencyConfig('empty', userConfig)).toBeNull();
   });
 
   it('returns `null` if android project was not found', () => {
-    expect(getDependencyConfig('/empty', userConfig)).toBeNull();
+    expect(getDependencyConfig('empty', userConfig)).toBeNull();
   });
 
   it('returns `null` if android project does not contain ReactPackage', () => {
-    expect(getDependencyConfig('/noPackage', userConfig)).toBeNull();
+    expect(getDependencyConfig('noPackage', userConfig)).toBeNull();
   });
 
   it('returns `null` if it cannot find a packageClassName', () => {
-    expect(getDependencyConfig('/corrupted', userConfig)).toBeNull();
+    expect(getDependencyConfig('corrupted', userConfig)).toBeNull();
+  });
+
+  afterAll(() => {
+    mockFS.restore();
   });
 });

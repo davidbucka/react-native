@@ -1,8 +1,10 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  */
 
 #import "RCTObjcExecutor.h"
@@ -17,7 +19,6 @@
 #import <cxxreact/JSExecutor.h>
 #import <cxxreact/MessageQueueThread.h>
 #import <cxxreact/ModuleRegistry.h>
-#import <cxxreact/RAMBundleRegistry.h>
 #import <folly/json.h>
 
 namespace facebook {
@@ -39,15 +40,12 @@ public:
                   std::shared_ptr<ExecutorDelegate> delegate)
     : m_jse(jse)
     , m_errorBlock(errorBlock)
-    , m_delegate(std::move(delegate))
     , m_jsThread(std::move(jsThread))
+    , m_delegate(std::move(delegate))
   {
     m_jsCallback = ^(id json, NSError *error) {
       if (error) {
-        // Do not use "m_errorBlock" here as the bridge might be in the middle
-        // of invalidation as a result of error handling and "this" can be
-        // already deallocated.
-        errorBlock(error);
+        m_errorBlock(error);
         return;
       }
 
@@ -93,12 +91,8 @@ public:
       }];
   }
 
-  void setBundleRegistry(std::unique_ptr<RAMBundleRegistry>) override {
-    RCTAssert(NO, @"RAM bundles are not supported in RCTObjcExecutor");
-  }
-
-  void registerBundle(uint32_t bundleId, const std::string &bundlePath) override {
-    RCTAssert(NO, @"RAM bundles are not supported in RCTObjcExecutor");
+  void setJSModulesUnbundle(std::unique_ptr<JSModulesUnbundle>) override {
+    RCTAssert(NO, @"Unbundle is not supported in RCTObjcExecutor");
   }
 
   void callFunction(const std::string &module, const std::string &method,
@@ -121,10 +115,6 @@ public:
     [m_jse injectJSONText:@(jsonValue->c_str())
            asGlobalObjectNamed:@(propName.c_str())
            callback:m_errorBlock];
-  }
-
-  virtual std::string getDescription() override {
-    return [NSStringFromClass([m_jse class]) UTF8String];
   }
 
 private:

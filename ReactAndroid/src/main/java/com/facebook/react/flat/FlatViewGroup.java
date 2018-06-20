@@ -1,11 +1,18 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  */
 
 package com.facebook.react.flat;
+
+import javax.annotation.Nullable;
+
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -21,6 +28,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.SoftAssertions;
@@ -28,15 +36,11 @@ import com.facebook.react.touch.OnInterceptTouchEventListener;
 import com.facebook.react.touch.ReactHitSlopView;
 import com.facebook.react.touch.ReactInterceptingViewGroup;
 import com.facebook.react.uimanager.PointerEvents;
-import com.facebook.react.uimanager.ReactClippingViewGroup;
 import com.facebook.react.uimanager.ReactCompoundViewGroup;
 import com.facebook.react.uimanager.ReactPointerEventsView;
 import com.facebook.react.uimanager.UIManagerModule;
-import com.facebook.react.uimanager.events.EventDispatcher;
 import com.facebook.react.views.image.ImageLoadEvent;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import javax.annotation.Nullable;
+import com.facebook.react.uimanager.ReactClippingViewGroup;
 
 /**
  * A view that the {@link FlatShadowNode} hierarchy maps to.  Can mount and draw native views as
@@ -115,7 +119,7 @@ import javax.annotation.Nullable;
     }
 
     /**
-     * Propagates image load events to javascript if the hosting view is still alive.
+     * Propogates image load events to javascript if the hosting view is still alive.
      *
      * @param reactTag The view id.
      * @param imageLoadEvent The event type.
@@ -127,7 +131,8 @@ import javax.annotation.Nullable;
       }
 
       ReactContext reactContext = ((ReactContext) view.getContext());
-      reactContext.getNativeModule(UIManagerModule.class).getEventDispatcher().dispatchEvent(
+      UIManagerModule uiManagerModule = reactContext.getNativeModule(UIManagerModule.class);
+      uiManagerModule.getEventDispatcher().dispatchEvent(
           new ImageLoadEvent(reactTag, imageLoadEvent));
     }
   }

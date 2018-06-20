@@ -1,7 +1,4 @@
-// Copyright (c) 2004-present, Facebook, Inc.
-
-// This source code is licensed under the MIT license found in the
-// LICENSE file in the root directory of this source tree.
+// Copyright 2004-present Facebook. All Rights Reserved.
 
 #pragma once
 
@@ -9,7 +6,8 @@
 #include <memory>
 #include <string>
 
-#include <cxxreact/ReactMarker.h>
+#include <cxxreact/JSExecutor.h>
+#include <cxxreact/MessageQueueThread.h>
 #include <jschelpers/JavaScriptCore.h>
 
 #ifndef RN_EXPORT
@@ -18,6 +16,27 @@
 
 namespace facebook {
 namespace react {
+
+namespace ReactMarker {
+
+enum ReactMarkerId {
+  NATIVE_REQUIRE_START,
+  NATIVE_REQUIRE_STOP,
+  RUN_JS_BUNDLE_START,
+  RUN_JS_BUNDLE_STOP,
+  CREATE_REACT_CONTEXT_STOP,
+  JS_BUNDLE_STRING_CONVERT_START,
+  JS_BUNDLE_STRING_CONVERT_STOP,
+  NATIVE_MODULE_SETUP_START,
+  NATIVE_MODULE_SETUP_STOP,
+};
+
+using LogTaggedMarker = std::function<void(const ReactMarkerId, const char* tag)>;
+extern RN_EXPORT LogTaggedMarker logTaggedMarker;
+
+extern void logMarker(const ReactMarkerId markerId);
+
+}
 
 namespace JSCNativeHooks {
 
@@ -31,7 +50,7 @@ using Hook = JSValueRef(*)(
 extern RN_EXPORT Hook loggingHook;
 extern RN_EXPORT Hook nowHook;
 
-typedef void(*ConfigurationHook)(JSGlobalContextRef);
+using ConfigurationHook = std::function<void(JSGlobalContextRef)>;
 extern RN_EXPORT ConfigurationHook installPerfHooks;
 
 }

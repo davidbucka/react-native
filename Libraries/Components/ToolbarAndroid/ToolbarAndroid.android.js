@@ -1,27 +1,30 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @format
+ * @providesModule ToolbarAndroid
  */
 
 'use strict';
 
-const Image = require('Image');
-const NativeMethodsMixin = require('NativeMethodsMixin');
-const React = require('React');
-const PropTypes = require('prop-types');
-const UIManager = require('UIManager');
-const ViewPropTypes = require('ViewPropTypes');
-const ColorPropType = require('ColorPropType');
+var Image = require('Image');
+var NativeMethodsMixin = require('NativeMethodsMixin');
+var React = require('React');
+var PropTypes = require('prop-types');
+var ReactNativeViewAttributes = require('ReactNativeViewAttributes');
+var UIManager = require('UIManager');
+var ViewPropTypes = require('ViewPropTypes');
+var ColorPropType = require('ColorPropType');
 
-const createReactClass = require('create-react-class');
-const requireNativeComponent = require('requireNativeComponent');
-const resolveAssetSource = require('resolveAssetSource');
+var createReactClass = require('create-react-class');
+var requireNativeComponent = require('requireNativeComponent');
+var resolveAssetSource = require('resolveAssetSource');
 
-const optionalImageSource = PropTypes.oneOfType([
+var optionalImageSource = PropTypes.oneOfType([
   Image.propTypes.source,
   // Image.propTypes.source is required but we want it to be optional, so we OR
   // it with a nullable propType.
@@ -63,7 +66,7 @@ const optionalImageSource = PropTypes.oneOfType([
  *
  * [0]: https://developer.android.com/reference/android/support/v7/widget/Toolbar.html
  */
-const ToolbarAndroid = createReactClass({
+var ToolbarAndroid = createReactClass({
   displayName: 'ToolbarAndroid',
   mixins: [NativeMethodsMixin],
 
@@ -82,14 +85,12 @@ const ToolbarAndroid = createReactClass({
      * `ifRoom` or `never`
      * * `showWithText`: boolean, whether to show text alongside the icon or not
      */
-    actions: PropTypes.arrayOf(
-      PropTypes.shape({
-        title: PropTypes.string.isRequired,
-        icon: optionalImageSource,
-        show: PropTypes.oneOf(['always', 'ifRoom', 'never']),
-        showWithText: PropTypes.bool,
-      }),
-    ),
+    actions: PropTypes.arrayOf(PropTypes.shape({
+      title: PropTypes.string.isRequired,
+      icon: optionalImageSource,
+      show: PropTypes.oneOf(['always', 'ifRoom', 'never']),
+      showWithText: PropTypes.bool
+    })),
     /**
      * Sets the toolbar logo.
      */
@@ -163,7 +164,7 @@ const ToolbarAndroid = createReactClass({
   },
 
   render: function() {
-    const nativeProps = {
+    var nativeProps = {
       ...this.props,
     };
     if (this.props.logo) {
@@ -176,17 +177,16 @@ const ToolbarAndroid = createReactClass({
       nativeProps.overflowIcon = resolveAssetSource(this.props.overflowIcon);
     }
     if (this.props.actions) {
-      const nativeActions = [];
-      for (let i = 0; i < this.props.actions.length; i++) {
-        const action = {
+      var nativeActions = [];
+      for (var i = 0; i < this.props.actions.length; i++) {
+        var action = {
           ...this.props.actions[i],
         };
         if (action.icon) {
           action.icon = resolveAssetSource(action.icon);
         }
         if (action.show) {
-          action.show =
-            UIManager.ToolbarAndroid.Constants.ShowAsAction[action.show];
+          action.show = UIManager.ToolbarAndroid.Constants.ShowAsAction[action.show];
         }
         nativeActions.push(action);
       }
@@ -197,7 +197,7 @@ const ToolbarAndroid = createReactClass({
   },
 
   _onSelect: function(event) {
-    const position = event.nativeEvent.position;
+    var position = event.nativeEvent.position;
     if (position === -1) {
       this.props.onIconClicked && this.props.onIconClicked();
     } else {
@@ -206,6 +206,10 @@ const ToolbarAndroid = createReactClass({
   },
 });
 
-const NativeToolbar = requireNativeComponent('ToolbarAndroid');
+var NativeToolbar = requireNativeComponent('ToolbarAndroid', ToolbarAndroid, {
+  nativeOnly: {
+    nativeActions: true,
+  }
+});
 
 module.exports = ToolbarAndroid;

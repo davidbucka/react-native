@@ -1,17 +1,19 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @format
+ * @providesModule TabBarItemIOS
  */
 
 'use strict';
 
-const React = require('React');
-const View = require('View');
-const StyleSheet = require('StyleSheet');
+var React = require('React');
+var View = require('View');
+var StyleSheet = require('StyleSheet');
 
 class DummyTab extends React.Component {
   render() {
@@ -19,12 +21,14 @@ class DummyTab extends React.Component {
       return <View />;
     }
     return (
-      <View style={[this.props.style, styles.tab]}>{this.props.children}</View>
+      <View style={[this.props.style, styles.tab]}>
+        {this.props.children}
+      </View>
     );
   }
 }
 
-const styles = StyleSheet.create({
+var styles = StyleSheet.create({
   tab: {
     // TODO(5405356): Implement overflow: visible so position: absolute isn't useless
     // position: 'absolute',
@@ -34,7 +38,7 @@ const styles = StyleSheet.create({
     left: 0,
     borderColor: 'red',
     borderWidth: 1,
-  },
+  }
 });
 
 module.exports = DummyTab;

@@ -1,7 +1,4 @@
-// Copyright (c) 2015-present, Facebook, Inc.
-
-// This source code is licensed under the MIT license found in the
-// LICENSE file in the root directory of this source tree.
+// Copyright 2015-present Facebook. All Rights Reserved.
 
 apply plugin: 'maven'
 apply plugin: 'signing'
@@ -15,15 +12,15 @@ def isReleaseBuild() {
 }
 
 def getRepositoryUrl() {
-    return project.hasProperty('repositoryUrl') ? property('repositoryUrl') : 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+    return hasProperty('repositoryUrl') ? property('repositoryUrl') : 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
 }
 
 def getRepositoryUsername() {
-    return project.hasProperty('repositoryUsername') ? property('repositoryUsername') : ''
+    return hasProperty('repositoryUsername') ? property('repositoryUsername') : ''
 }
 
 def getRepositoryPassword() {
-    return project.hasProperty('repositoryPassword') ? property('repositoryPassword') : ''
+    return hasProperty('repositoryPassword') ? property('repositoryPassword') : ''
 }
 
 def configureReactNativePom(def pom) {
@@ -42,7 +39,7 @@ def configureReactNativePom(def pom) {
 
         licenses {
             license {
-                name 'MIT License'
+                name 'BSD License'
                 url 'https://github.com/facebook/react-native/blob/master/LICENSE'
                 distribution 'repo'
             }

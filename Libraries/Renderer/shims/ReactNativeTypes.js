@@ -1,14 +1,20 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @format
+ * @providesModule ReactNativeTypes
  * @flow
  */
+'use strict';
 
-import React from 'react';
+/* $FlowFixMe(>=0.53.0 site=react_native_fb,react_native_oss) This comment
+ * suppresses an error when upgrading Flow's support for React. To see the
+ * error delete this comment and run Flow. */
+import type React from 'react';
 
 export type MeasureOnSuccessCallback = (
   x: number,
@@ -33,43 +39,6 @@ export type MeasureLayoutOnSuccessCallback = (
   height: number,
 ) => void;
 
-type BubblingEventType = {
-  phasedRegistrationNames: {
-    captured: string,
-    bubbled: string,
-  },
-};
-
-type DirectEventType = {
-  registrationName: string,
-};
-
-export type ReactNativeBaseComponentViewConfig = {
-  validAttributes: Object,
-  uiViewClassName: string,
-  bubblingEventTypes?: {[topLevelType: string]: BubblingEventType},
-  directEventTypes?: {[topLevelType: string]: DirectEventType},
-  propTypes?: Object,
-};
-
-export type ViewConfigGetter = () => ReactNativeBaseComponentViewConfig;
-
-/**
- * Class only exists for its Flow type.
- */
-class ReactNativeComponent<Props> extends React.Component<Props> {
-  blur(): void {}
-  focus(): void {}
-  measure(callback: MeasureOnSuccessCallback): void {}
-  measureInWindow(callback: MeasureInWindowOnSuccessCallback): void {}
-  measureLayout(
-    relativeToNativeNode: number,
-    onSuccess: MeasureLayoutOnSuccessCallback,
-    onFail?: () => void,
-  ): void {}
-  setNativeProps(nativeProps: Object): void {}
-}
-
 /**
  * This type keeps ReactNativeFiberHostComponent and NativeMethodsMixin in sync.
  * It can also provide types for ReactNative applications that use NMM or refs.
@@ -87,15 +56,21 @@ export type NativeMethodsMixinType = {
   setNativeProps(nativeProps: Object): void,
 };
 
-type SecretInternalsType = {
-  NativeMethodsMixin: NativeMethodsMixinType,
-  computeComponentStackForErrorReporting(tag: number): string,
-  // TODO (bvaughn) Decide which additional types to expose here?
-  // And how much information to fill in for the above types.
+type ReactNativeBaseComponentViewConfig = {
+  validAttributes: Object,
+  uiViewClassName: string,
+  propTypes?: Object,
 };
 
-type SecretInternalsFabricType = {
+type SecretInternalsType = {
   NativeMethodsMixin: NativeMethodsMixinType,
+  createReactNativeComponentClass(
+    viewConfig: ReactNativeBaseComponentViewConfig,
+  ): any,
+  ReactNativeComponentTree: any,
+  ReactNativePropRegistry: any,
+  // TODO (bvaughn) Decide which additional types to expose here?
+  // And how much information to fill in for the above types.
 };
 
 /**
@@ -103,10 +78,10 @@ type SecretInternalsFabricType = {
  * Provide minimal Flow typing for the high-level RN API and call it a day.
  */
 export type ReactNativeType = {
-  NativeComponent: typeof ReactNativeComponent,
+  NativeComponent: any,
   findNodeHandle(componentOrHandle: any): ?number,
   render(
-    element: React$Element<any>,
+    element: React.Element<any>,
     containerTag: any,
     callback: ?Function,
   ): any,
@@ -115,17 +90,4 @@ export type ReactNativeType = {
   unstable_batchedUpdates: any, // TODO (bvaughn) Add types
 
   __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED: SecretInternalsType,
-};
-
-export type ReactFabricType = {
-  NativeComponent: typeof ReactNativeComponent,
-  findNodeHandle(componentOrHandle: any): ?number,
-  render(
-    element: React$Element<any>,
-    containerTag: any,
-    callback: ?Function,
-  ): any,
-  unmountComponentAtNode(containerTag: number): any,
-
-  __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED: SecretInternalsFabricType,
 };

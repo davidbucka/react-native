@@ -1,12 +1,3 @@
-/**
- * Copyright (c) 2015-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * @format
- */
-
 const xcode = require('xcode');
 const fs = require('fs');
 const path = require('path');
@@ -16,7 +7,6 @@ const addToHeaderSearchPaths = require('./addToHeaderSearchPaths');
 const getHeadersInFolder = require('./getHeadersInFolder');
 const getHeaderSearchPath = require('./getHeaderSearchPath');
 const getProducts = require('./getProducts');
-const getTargets = require('./getTargets');
 const createGroupWithMessage = require('./createGroupWithMessage');
 const addFileToProject = require('./addFileToProject');
 const addProjectToLibraries = require('./addProjectToLibraries');
@@ -31,49 +21,22 @@ const getGroup = require('./getGroup');
  *
  * If library is already linked, this action is a no-op.
  */
-module.exports = function registerNativeModuleIOS(
-  dependencyConfig,
-  projectConfig,
-) {
+module.exports = function registerNativeModuleIOS(dependencyConfig, projectConfig) {
   const project = xcode.project(projectConfig.pbxprojPath).parseSync();
-  const dependencyProject = xcode
-    .project(dependencyConfig.pbxprojPath)
-    .parseSync();
+  const dependencyProject = xcode.project(dependencyConfig.pbxprojPath).parseSync();
 
-  const libraries = createGroupWithMessage(
-    project,
-    projectConfig.libraryFolder,
-  );
+  const libraries = createGroupWithMessage(project, projectConfig.libraryFolder);
   const file = addFileToProject(
     project,
-    path.relative(projectConfig.sourceDir, dependencyConfig.projectPath),
+    path.relative(projectConfig.sourceDir, dependencyConfig.projectPath)
   );
-
-  const targets = getTargets(project);
 
   addProjectToLibraries(libraries, file);
 
-  getTargets(dependencyProject).forEach(product => {
-    var i;
-    if (!product.isTVOS) {
-      for (i = 0; i < targets.length; i++) {
-        if (!targets[i].isTVOS) {
-          project.addStaticLibrary(product.name, {
-            target: targets[i].uuid,
-          });
-        }
-      }
-    }
-
-    if (product.isTVOS) {
-      for (i = 0; i < targets.length; i++) {
-        if (targets[i].isTVOS) {
-          project.addStaticLibrary(product.name, {
-            target: targets[i].uuid,
-          });
-        }
-      }
-    }
+  getProducts(dependencyProject).forEach(product => {
+    project.addStaticLibrary(product, {
+      target: project.getFirstTarget().uuid,
+    });
   });
 
   addSharedLibraries(project, dependencyConfig.sharedLibraries);
@@ -82,9 +45,12 @@ module.exports = function registerNativeModuleIOS(
   if (!isEmpty(headers)) {
     addToHeaderSearchPaths(
       project,
-      getHeaderSearchPath(projectConfig.sourceDir, headers),
+      getHeaderSearchPath(projectConfig.sourceDir, headers)
     );
   }
 
-  fs.writeFileSync(projectConfig.pbxprojPath, project.writeSync());
+  fs.writeFileSync(
+    projectConfig.pbxprojPath,
+    project.writeSync()
+  );
 };

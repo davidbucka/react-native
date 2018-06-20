@@ -1,8 +1,10 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  */
 
 #import <Foundation/Foundation.h>
@@ -30,11 +32,10 @@
  * Use the RCTInitRunnerForApp macro for typical usage. See FBSnapshotTestCase.h for more information
  * on how to configure the snapshotting system.
  */
-#define RCTInitRunnerForApp(app__, moduleProvider__, scriptURL__) \
+#define RCTInitRunnerForApp(app__, moduleProvider__) \
 [[RCTTestRunner alloc] initWithApp:(app__) \
                 referenceDirectory:@FB_REFERENCE_IMAGE_DIR \
-                    moduleProvider:(moduleProvider__) \
-                    scriptURL: scriptURL__]
+                    moduleProvider:(moduleProvider__)]
 
 @protocol RCTBridgeModule;
 @class RCTBridge;
@@ -48,10 +49,6 @@
  * otherwise, the UI will be compared to the existing snapshot.
  */
 @property (nonatomic, assign) BOOL recordMode;
-
-@property (nonatomic, assign, readwrite) BOOL useBundler;
-
-@property (nonatomic, assign, readwrite) BOOL useJSDebugger;
 
 @property (nonatomic, copy) NSString *testSuffix;
 
@@ -67,8 +64,7 @@
  */
 - (instancetype)initWithApp:(NSString *)app
          referenceDirectory:(NSString *)referenceDirectory
-             moduleProvider:(RCTBridgeModuleListProvider)block
-                  scriptURL:(NSURL *)scriptURL NS_DESIGNATED_INITIALIZER;
+             moduleProvider:(RCTBridgeModuleListProvider)block NS_DESIGNATED_INITIALIZER;
 
 /**
  * Simplest runTest function simply mounts the specified JS module with no

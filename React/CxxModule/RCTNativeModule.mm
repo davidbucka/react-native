@@ -1,8 +1,10 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  */
 
 #import "RCTNativeModule.h"
@@ -22,8 +24,6 @@
 
 namespace facebook {
 namespace react {
-
-static MethodCallResult invokeInner(RCTBridge *bridge, RCTModuleData *moduleData, unsigned int methodId, const folly::dynamic &params);
 
 RCTNativeModule::RCTNativeModule(RCTBridge *bridge, RCTModuleData *moduleData)
     : m_bridge(bridge)
@@ -56,19 +56,16 @@ folly::dynamic RCTNativeModule::getConstants() {
 }
 
 void RCTNativeModule::invoke(unsigned int methodId, folly::dynamic &&params, int callId) {
-  // capture by weak pointer so that we can safely use these variables in a callback
-  __weak RCTBridge *weakBridge = m_bridge;
-  __weak RCTModuleData *weakModuleData = m_moduleData;
   // The BatchedBridge version of this buckets all the callbacks by thread, and
   // queues one block on each.  This is much simpler; we'll see how it goes and
   // iterate.
-  dispatch_block_t block = [weakBridge, weakModuleData, methodId, params=std::move(params), callId] {
+  dispatch_block_t block = [this, methodId, params=std::move(params), callId] {
     #ifdef WITH_FBSYSTRACE
     if (callId != -1) {
       fbsystrace_end_async_flow(TRACE_TAG_REACT_APPS, "native", callId);
     }
     #endif
-    invokeInner(weakBridge, weakModuleData, methodId, std::move(params));
+    invokeInner(methodId, std::move(params));
   };
 
   dispatch_queue_t queue = m_moduleData.methodQueue;
@@ -80,23 +77,23 @@ void RCTNativeModule::invoke(unsigned int methodId, folly::dynamic &&params, int
 }
 
 MethodCallResult RCTNativeModule::callSerializableNativeHook(unsigned int reactMethodId, folly::dynamic &&params) {
-  return invokeInner(m_bridge, m_moduleData, reactMethodId, params);
+  return invokeInner(reactMethodId, std::move(params));
 }
 
-static MethodCallResult invokeInner(RCTBridge *bridge, RCTModuleData *moduleData, unsigned int methodId, const folly::dynamic &params) {
-  if (!bridge || !bridge.valid || !moduleData) {
+MethodCallResult RCTNativeModule::invokeInner(unsigned int methodId, const folly::dynamic &&params) {
+  if (!m_bridge.valid) {
     return folly::none;
   }
 
-  id<RCTBridgeMethod> method = moduleData.methods[methodId];
+  id<RCTBridgeMethod> method = m_moduleData.methods[methodId];
   if (RCT_DEBUG && !method) {
     RCTLogError(@"Unknown methodID: %ud for module: %@",
-                methodId, moduleData.name);
+                methodId, m_moduleData.name);
   }
 
   NSArray *objcParams = convertFollyDynamicToId(params);
   @try {
-    id result = [method invokeWithBridge:bridge module:moduleData.instance arguments:objcParams];
+    id result = [method invokeWithBridge:m_bridge module:m_moduleData.instance arguments:objcParams];
     return convertIdToFollyDynamic(result);
   }
   @catch (NSException *exception) {
@@ -106,12 +103,10 @@ static MethodCallResult invokeInner(RCTBridge *bridge, RCTModuleData *moduleData
     }
 
     NSString *message = [NSString stringWithFormat:
-                         @"Exception '%@' was thrown while invoking %s on target %@ with params %@\ncallstack: %@",
-                         exception, method.JSMethodName, moduleData.name, objcParams, exception.callStackSymbols];
+                         @"Exception '%@' was thrown while invoking %s on target %@ with params %@",
+                         exception, method.JSMethodName, m_moduleData.name, objcParams];
     RCTFatal(RCTErrorWithMessage(message));
   }
-
-  return folly::none;
 }
 
 }

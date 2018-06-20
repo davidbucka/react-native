@@ -1,10 +1,13 @@
-load("//ReactNative:DEFS.bzl", "react_native_dep", "react_native_target", "rn_android_library")
+include_defs("//ReactAndroid/DEFS")
 
-rn_android_library(
+android_library(
     name = "systeminfo",
     srcs = [
         "AndroidInfoModule.java",
         "ReactNativeVersion.java",
+    ],
+    exported_deps = [
+        ":systeminfo-moduleless",
     ],
     visibility = [
         "PUBLIC",
@@ -15,12 +18,9 @@ rn_android_library(
         react_native_target("java/com/facebook/react/common:common"),
         react_native_target("java/com/facebook/react/module/annotations:annotations"),
     ],
-    exported_deps = [
-        ":systeminfo-moduleless",
-    ],
 )
 
-rn_android_library(
+android_library(
     name = "systeminfo-moduleless",
     srcs = [
         "AndroidInfoHelpers.java",

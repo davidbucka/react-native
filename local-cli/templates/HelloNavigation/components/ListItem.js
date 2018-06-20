@@ -1,8 +1,6 @@
-/** @format */
-
 'use strict';
 
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
   Platform,
   StyleSheet,
@@ -30,7 +28,7 @@ const Touchable = ({onPress, children}) => {
       </TouchableHighlight>
     );
   }
-};
+}
 
 const ListItem = ({label, onPress}) => (
   <Touchable onPress={onPress}>
@@ -50,7 +48,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-  },
+  }
 });
 
 export default ListItem;

@@ -1,9 +1,12 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
+ * @providesModule MetroListView
  * @flow
  * @format
  */
@@ -49,6 +52,8 @@ type NormalProps = {
 type DefaultProps = {
   keyExtractor: (item: Item, index: number) => string,
 };
+/* $FlowFixMe - the renderItem passed in from SectionList is optional there but
+ * required here */
 type Props = NormalProps & DefaultProps;
 
 /**
@@ -85,7 +90,6 @@ class MetroListView extends React.Component<Props, $FlowFixMeState> {
   }
   scrollToOffset(params: {animated?: ?boolean, offset: number}) {
     const {animated, offset} = params;
-    // $FlowFixMe Invalid prop usage
     this._listRef.scrollTo(
       this.props.horizontal ? {x: offset, animated} : {y: offset, animated},
     );
@@ -103,7 +107,9 @@ class MetroListView extends React.Component<Props, $FlowFixMeState> {
     renderScrollComponent: (props: Props) => {
       if (props.onRefresh) {
         return (
-          // $FlowFixMe Invalid prop usage
+          /* $FlowFixMe(>=0.53.0 site=react_native_fb,react_native_oss) This
+           * comment suppresses an error when upgrading Flow's support for
+           * React. To see the error delete this comment and run Flow. */
           <ScrollView
             {...props}
             refreshControl={
@@ -119,7 +125,9 @@ class MetroListView extends React.Component<Props, $FlowFixMeState> {
           />
         );
       } else {
-        // $FlowFixMe Invalid prop usage
+        /* $FlowFixMe(>=0.53.0 site=react_native_fb,react_native_oss) This
+         * comment suppresses an error when upgrading Flow's support for React.
+         * To see the error delete this comment and run Flow. */
         return <ScrollView {...props} />;
       }
     },
@@ -133,12 +141,14 @@ class MetroListView extends React.Component<Props, $FlowFixMeState> {
     }),
     sectionHeaderData: {},
   });
-  UNSAFE_componentWillReceiveProps(newProps: Props) {
+  componentWillReceiveProps(newProps: Props) {
     this.setState(state => this._computeState(newProps, state));
   }
   render() {
     return (
-      // $FlowFixMe Found when typing ListView
+      /* $FlowFixMe(>=0.53.0 site=react_native_fb,react_native_oss) This
+       * comment suppresses an error when upgrading Flow's support for React.
+       * To see the error delete this comment and run Flow. */
       <ListView
         {...this.props}
         dataSource={this.state.ds}
@@ -150,8 +160,11 @@ class MetroListView extends React.Component<Props, $FlowFixMeState> {
       />
     );
   }
-  _listRef: ?ListView;
+  _listRef: ListView;
   _captureRef = ref => {
+    /* $FlowFixMe(>=0.53.0 site=react_native_fb,react_native_oss) This comment
+     * suppresses an error when upgrading Flow's support for React. To see the
+     * error delete this comment and run Flow. */
     this._listRef = ref;
   };
   _computeState(props: Props, state) {
@@ -171,7 +184,6 @@ class MetroListView extends React.Component<Props, $FlowFixMeState> {
     } else {
       invariant(!props.sections, 'Cannot have both sections and items props.');
       return {
-        // $FlowFixMe Found when typing ListView
         ds: state.ds.cloneWithRows(props.items),
         sectionHeaderData,
       };
@@ -192,12 +204,11 @@ class MetroListView extends React.Component<Props, $FlowFixMeState> {
     );
     return renderSectionHeader({section});
   };
-  _renderSeparator = (sID, rID) => (
+  _renderSeparator = (sID, rID) =>
     /* $FlowFixMe(>=0.53.0 site=react_native_fb,react_native_oss) This comment
      * suppresses an error when upgrading Flow's support for React. To see the
      * error delete this comment and run Flow. */
-    <this.props.SeparatorComponent key={sID + rID} />
-  );
+    <this.props.SeparatorComponent key={sID + rID} />;
 }
 
 module.exports = MetroListView;

@@ -1,13 +1,15 @@
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @format
+ * @providesModule TextInputTestModule
  */
 
-'use strict';
+"use strict";
 
 var BatchedBridge = require('BatchedBridge');
 var React = require('React');
@@ -26,14 +28,13 @@ class TokenizedTextExample extends React.Component {
     this.state = {text: ''};
   }
   render() {
+
     //define delimiter
     let delimiter = /\s+/;
 
     //split string
     let _text = this.state.text;
-    let token,
-      index,
-      parts = [];
+    let token, index, parts = [];
     while (_text) {
       delimiter.lastIndex = 0;
       token = delimiter.exec(_text);
@@ -52,13 +53,9 @@ class TokenizedTextExample extends React.Component {
     parts.push(_text);
 
     //highlight hashtags
-    parts = parts.map(text => {
+    parts = parts.map((text) => {
       if (/^#/.test(text)) {
-        return (
-          <Text key={text} style={styles.hashtag}>
-            {text}
-          </Text>
-        );
+        return <Text key={text} style={styles.hashtag}>{text}</Text>;
       } else {
         return text;
       }
@@ -71,7 +68,7 @@ class TokenizedTextExample extends React.Component {
           testID="tokenizedInput"
           multiline={true}
           style={styles.multiline}
-          onChangeText={text => {
+          onChangeText={(text) => {
             this.setState({text});
           }}>
           <Text>{parts}</Text>
@@ -86,7 +83,7 @@ class TextInputTestApp extends React.Component {
     app = this;
   }
 
-  handleOnSubmitEditing = record => {
+  handleOnSubmitEditing = (record) => {
     Recording.record(record);
   };
 
@@ -97,7 +94,7 @@ class TextInputTestApp extends React.Component {
           style={styles.textInputHeight}
           autoCorrect={true}
           autoFocus={true}
-          keyboardType="numeric"
+          keyboardType='numeric'
           multiline={true}
           secureTextEntry={true}
           defaultValue="This is text"
@@ -105,13 +102,13 @@ class TextInputTestApp extends React.Component {
         />
         <TextInput
           style={styles.textInput}
-          autoCapitalize="sentences"
+          autoCapitalize='sentences'
           autoCorrect={false}
           autoFocus={false}
-          keyboardType="default"
+          keyboardType='default'
           multiline={false}
           secureTextEntry={false}
-          placeholder="1234"
+          placeholder='1234'
           testID="textInput2"
         />
         <TextInput
@@ -179,7 +176,7 @@ var TextInputTestModule = {
 
 BatchedBridge.registerCallableModule(
   'TextInputTestModule',
-  TextInputTestModule,
+  TextInputTestModule
 );
 
 module.exports = TextInputTestModule;

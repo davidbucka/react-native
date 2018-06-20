@@ -1,7 +1,4 @@
-// Copyright (c) 2004-present, Facebook, Inc.
-
-// This source code is licensed under the MIT license found in the
-// LICENSE file in the root directory of this source tree.
+// Copyright 2004-present Facebook. All Rights Reserved.
 
 package com.facebook.react.uimanager;
 
@@ -9,6 +6,7 @@ import android.graphics.Color;
 import android.os.Build;
 import android.view.View;
 import android.view.ViewParent;
+
 import com.facebook.react.R;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.uimanager.annotations.ReactProp;
@@ -23,6 +21,7 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
 
   private static final String PROP_BACKGROUND_COLOR = ViewProps.BACKGROUND_COLOR;
   private static final String PROP_TRANSFORM = "transform";
+  private static final String PROP_OPACITY = "opacity";
   private static final String PROP_ELEVATION = "elevation";
   private static final String PROP_Z_INDEX = "zIndex";
   private static final String PROP_RENDER_TO_HARDWARE_TEXTURE = "renderToHardwareTextureAndroid";
@@ -65,7 +64,7 @@ public abstract class BaseViewManager<T extends View, C extends LayoutShadowNode
     }
   }
 
-  @ReactProp(name = ViewProps.OPACITY, defaultFloat = 1.f)
+  @ReactProp(name = PROP_OPACITY, defaultFloat = 1.f)
   public void setOpacity(T view, float opacity) {
     view.setAlpha(opacity);
   }

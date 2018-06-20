@@ -1,20 +1,19 @@
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @format
- * @emails oncall+react_native
  */
-
 'use strict';
 
-const buildStyleInterpolator = require('buildStyleInterpolator');
+var buildStyleInterpolator = require('buildStyleInterpolator');
 
-const validateEmpty = function(interpolator, value, validator) {
-  const emptyObject = {};
-  let changed = interpolator(emptyObject, value);
+var validateEmpty = function(interpolator, value, validator) {
+  var emptyObject = {};
+  var changed = interpolator(emptyObject, value);
   validator(emptyObject);
   expect(changed).toBe(true);
   changed = interpolator(emptyObject, value);
@@ -22,7 +21,7 @@ const validateEmpty = function(interpolator, value, validator) {
 };
 describe('buildStyleInterpolator', function() {
   it('should linearly interpolate without extrapolating', function() {
-    const testAnim = {
+    var testAnim = {
       opacity: {
         from: 100,
         to: 200,
@@ -44,7 +43,7 @@ describe('buildStyleInterpolator', function() {
         value: 23.5,
       },
     };
-    const interpolator = buildStyleInterpolator(testAnim);
+    var interpolator = buildStyleInterpolator(testAnim);
     validateEmpty(interpolator, 0, function(res) {
       expect(res).toEqual({
         opacity: 100,
@@ -82,14 +81,14 @@ describe('buildStyleInterpolator', function() {
     });
   });
   it('should linearly interpolate with extrapolating', function() {
-    const testAnim = {
+    var testAnim = {
       opacity: {
         from: 100,
         to: 200,
         min: 0,
         max: 1,
         type: 'linear',
-        round: 1, // To make testing easier
+        round: 1,  // To make testing easier
         extrapolate: true,
       },
       left: {
@@ -98,7 +97,7 @@ describe('buildStyleInterpolator', function() {
         min: 0,
         max: 1,
         type: 'linear',
-        round: 1, // To make testing easier
+        round: 1,  // To make testing easier
         extrapolate: true,
       },
       top: {
@@ -106,7 +105,7 @@ describe('buildStyleInterpolator', function() {
         value: 23.5,
       },
     };
-    const interpolator = buildStyleInterpolator(testAnim);
+    var interpolator = buildStyleInterpolator(testAnim);
     validateEmpty(interpolator, 0, function(res) {
       expect(res).toEqual({
         opacity: 100,
@@ -144,18 +143,18 @@ describe('buildStyleInterpolator', function() {
     });
   });
   it('should round accordingly', function() {
-    const testAnim = {
+    var testAnim = {
       opacity: {
         from: 0,
         to: 1,
         min: 0,
         max: 1,
         type: 'linear',
-        round: 2, // As in one over two
+        round: 2,  // As in one over two
         extrapolate: true,
       },
     };
-    const interpolator = buildStyleInterpolator(testAnim);
+    var interpolator = buildStyleInterpolator(testAnim);
     validateEmpty(interpolator, 0, function(res) {
       expect(res).toEqual({
         opacity: 0,
@@ -188,20 +187,20 @@ describe('buildStyleInterpolator', function() {
     });
   });
   it('should detect chnages correctly', function() {
-    const testAnim = {
+    var testAnim = {
       opacity: {
         from: 0,
         to: 1,
         min: 0,
         max: 1,
         type: 'linear',
-        round: 2, // As in one over two
+        round: 2,  // As in one over two
         extrapolate: false,
       },
     };
-    const interpolator = buildStyleInterpolator(testAnim);
-    const obj = {};
-    let res = interpolator(obj, 0);
+    var interpolator = buildStyleInterpolator(testAnim);
+    var obj = {};
+    var res = interpolator(obj, 0);
     expect(obj).toEqual({
       opacity: 0,
     });
@@ -228,102 +227,9 @@ describe('buildStyleInterpolator', function() {
     });
     expect(res).toBe(false);
   });
-  it('should handle identity', function() {
-    const testAnim = {
-      opacity: {
-        type: 'identity',
-      },
-    };
-    const interpolator = buildStyleInterpolator(testAnim);
-    const obj = {};
-    let res = interpolator(obj, 0.5);
-    expect(obj).toEqual({
-      opacity: 0.5,
-    });
-    expect(res).toBe(true);
 
-    res = interpolator(obj, 0.5);
-    // No change detected
-    expect(obj).toEqual({
-      opacity: 0.5,
-    });
-    expect(res).toBe(false);
-  });
-  it('should translate', function() {
-    const testAnim = {
-      transformTranslate: {
-        from: {x: 1, y: 10, z: 100},
-        to: {x: 5, y: 50, z: 500},
-        min: 0,
-        max: 4,
-        type: 'linear',
-      },
-    };
-    const interpolator = buildStyleInterpolator(testAnim);
-    const obj = {};
-    const res = interpolator(obj, 1);
-    expect(obj).toEqual({
-      transform: [
-        {
-          matrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 20, 200, 1],
-        },
-      ],
-    });
-    expect(res).toBe(true);
-  });
-  it('should scale', function() {
-    const testAnim = {
-      transformScale: {
-        from: {x: 1, y: 10, z: 100},
-        to: {x: 5, y: 50, z: 500},
-        min: 0,
-        max: 4,
-        type: 'linear',
-      },
-    };
-    const interpolator = buildStyleInterpolator(testAnim);
-    const obj = {};
-    const res = interpolator(obj, 1);
-    expect(obj).toEqual({
-      transform: [
-        {
-          matrix: [2, 0, 0, 0, 0, 20, 0, 0, 0, 0, 200, 0, 0, 0, 0, 1],
-        },
-      ],
-    });
-    expect(res).toBe(true);
-  });
-  it('should combine scale and translate', function() {
-    const testAnim = {
-      transformScale: {
-        from: {x: 1, y: 10, z: 100},
-        to: {x: 5, y: 50, z: 500},
-        min: 0,
-        max: 4,
-        type: 'linear',
-      },
-      transformTranslate: {
-        from: {x: 1, y: 10, z: 100},
-        to: {x: 5, y: 50, z: 500},
-        min: 0,
-        max: 4,
-        type: 'linear',
-      },
-    };
-    const interpolator = buildStyleInterpolator(testAnim);
-    const obj = {};
-    const res = interpolator(obj, 1);
-    expect(obj).toEqual({
-      transform: [
-        {
-          matrix: [2, 0, 0, 0, 0, 20, 0, 0, 0, 0, 200, 0, 4, 400, 40000, 1],
-        },
-      ],
-    });
-    expect(res).toBe(true);
-  });
   it('should step', function() {
-    const testAnim = {
+    var testAnim = {
       opacity: {
         threshold: 13,
         from: 10,
@@ -331,9 +237,9 @@ describe('buildStyleInterpolator', function() {
         type: 'step',
       },
     };
-    const interpolator = buildStyleInterpolator(testAnim);
-    const obj = {};
-    let res = interpolator(obj, 0);
+    var interpolator = buildStyleInterpolator(testAnim);
+    var obj = {};
+    var res = interpolator(obj, 0);
     expect(obj).toEqual({
       opacity: 10,
     });

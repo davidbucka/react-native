@@ -1,10 +1,12 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @format
+ * @providesModule MaskedViewIOS
  * @flow
  */
 
@@ -15,13 +17,9 @@ const View = require('View');
 const ViewPropTypes = require('ViewPropTypes');
 const requireNativeComponent = require('requireNativeComponent');
 
-import type {ViewProps} from 'ViewPropTypes';
+import type { ViewProps } from 'ViewPropTypes';
 
-const RCTMaskedView = requireNativeComponent('RCTMaskedView');
-
-type Props = {
-  ...ViewProps,
-
+type Props = ViewProps & {
   children: any,
   /**
    * Should be a React element to be rendered and applied as the
@@ -35,12 +33,12 @@ type Props = {
  *
  * ```
  * import React from 'react';
- * import { MaskedViewIOS, Text, View } from 'react-native';
+ * import { MaskedView, Text, View } from 'react-native';
  *
  * class MyMaskedView extends React.Component {
  *   render() {
  *     return (
- *       <MaskedViewIOS
+ *       <MaskedView
  *         style={{ flex: 1 }}
  *         maskElement={
  *           <View style={styles.maskContainerStyle}>
@@ -51,7 +49,7 @@ type Props = {
  *         }
  *       >
  *         <View style={{ flex: 1, backgroundColor: 'blue' }} />
- *       </MaskedViewIOS>
+ *       </MaskedView>
  *     );
  *   }
  * }
@@ -75,13 +73,13 @@ class MaskedViewIOS extends React.Component<Props> {
   _hasWarnedInvalidRenderMask = false;
 
   render() {
-    const {maskElement, children, ...otherViewProps} = this.props;
+    const { maskElement, children, ...otherViewProps } = this.props;
 
     if (!React.isValidElement(maskElement)) {
       if (!this._hasWarnedInvalidRenderMask) {
         console.warn(
           'MaskedView: Invalid `maskElement` prop was passed to MaskedView. ' +
-            'Expected a React Element. No mask will render.',
+            'Expected a React Element. No mask will render.'
         );
         this._hasWarnedInvalidRenderMask = true;
       }
@@ -98,5 +96,13 @@ class MaskedViewIOS extends React.Component<Props> {
     );
   }
 }
+
+const RCTMaskedView = requireNativeComponent('RCTMaskedView', {
+  name: 'RCTMaskedView',
+  displayName: 'RCTMaskedView',
+  propTypes: {
+    ...ViewPropTypes,
+  },
+});
 
 module.exports = MaskedViewIOS;

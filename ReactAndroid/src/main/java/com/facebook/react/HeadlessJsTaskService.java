@@ -1,8 +1,10 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  */
 
 package com.facebook.react;
@@ -114,19 +116,11 @@ public abstract class HeadlessJsTaskService extends Service implements HeadlessJ
     }
   }
 
-  private void invokeStartTask(ReactContext reactContext, final HeadlessJsTaskConfig taskConfig) {
-    final HeadlessJsTaskContext headlessJsTaskContext = HeadlessJsTaskContext.getInstance(reactContext);
+  private void invokeStartTask(ReactContext reactContext, HeadlessJsTaskConfig taskConfig) {
+    HeadlessJsTaskContext headlessJsTaskContext = HeadlessJsTaskContext.getInstance(reactContext);
     headlessJsTaskContext.addTaskEventListener(this);
-
-    UiThreadUtil.runOnUiThread(
-      new Runnable() {
-        @Override
-        public void run() {
-          int taskId = headlessJsTaskContext.startTask(taskConfig);
-          mActiveTasks.add(taskId);
-        }
-      }
-    );
+    int taskId = headlessJsTaskContext.startTask(taskConfig);
+    mActiveTasks.add(taskId);
   }
 
   @Override

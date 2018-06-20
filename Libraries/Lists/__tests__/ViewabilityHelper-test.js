@@ -1,12 +1,13 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
  *
  * @format
- * @emails oncall+react_native
  */
 'use strict';
 
@@ -184,7 +185,6 @@ describe('onUpdate', function() {
     expect(onViewableItemsChanged.mock.calls.length).toBe(1);
     expect(onViewableItemsChanged.mock.calls[0][0]).toEqual({
       changed: [{isViewable: true, key: 'a'}],
-      viewabilityConfig: {viewAreaCoveragePercentThreshold: 0},
       viewableItems: [{isViewable: true, key: 'a'}],
     });
     helper.onUpdate(
@@ -207,7 +207,6 @@ describe('onUpdate', function() {
     expect(onViewableItemsChanged.mock.calls.length).toBe(2);
     expect(onViewableItemsChanged.mock.calls[1][0]).toEqual({
       changed: [{isViewable: false, key: 'a'}],
-      viewabilityConfig: {viewAreaCoveragePercentThreshold: 0},
       viewableItems: [],
     });
   });
@@ -231,7 +230,6 @@ describe('onUpdate', function() {
     expect(onViewableItemsChanged.mock.calls.length).toBe(1);
     expect(onViewableItemsChanged.mock.calls[0][0]).toEqual({
       changed: [{isViewable: true, key: 'a'}],
-      viewabilityConfig: {viewAreaCoveragePercentThreshold: 0},
       viewableItems: [{isViewable: true, key: 'a'}],
     });
     helper.onUpdate(
@@ -246,7 +244,6 @@ describe('onUpdate', function() {
     // Both visible with 100px overlap each
     expect(onViewableItemsChanged.mock.calls[1][0]).toEqual({
       changed: [{isViewable: true, key: 'b'}],
-      viewabilityConfig: {viewAreaCoveragePercentThreshold: 0},
       viewableItems: [
         {isViewable: true, key: 'a'},
         {isViewable: true, key: 'b'},
@@ -263,7 +260,6 @@ describe('onUpdate', function() {
     expect(onViewableItemsChanged.mock.calls.length).toBe(3);
     expect(onViewableItemsChanged.mock.calls[2][0]).toEqual({
       changed: [{isViewable: false, key: 'a'}],
-      viewabilityConfig: {viewAreaCoveragePercentThreshold: 0},
       viewableItems: [{isViewable: true, key: 'b'}],
     });
   });
@@ -294,10 +290,6 @@ describe('onUpdate', function() {
     expect(onViewableItemsChanged.mock.calls.length).toBe(1);
     expect(onViewableItemsChanged.mock.calls[0][0]).toEqual({
       changed: [{isViewable: true, key: 'a'}],
-      viewabilityConfig: {
-        minimumViewTime: 350,
-        viewAreaCoveragePercentThreshold: 0,
-      },
       viewableItems: [{isViewable: true, key: 'a'}],
     });
   });
@@ -335,10 +327,6 @@ describe('onUpdate', function() {
     expect(onViewableItemsChanged.mock.calls.length).toBe(1);
     expect(onViewableItemsChanged.mock.calls[0][0]).toEqual({
       changed: [{isViewable: true, key: 'b'}],
-      viewabilityConfig: {
-        minimumViewTime: 350,
-        viewAreaCoveragePercentThreshold: 0,
-      },
       viewableItems: [{isViewable: true, key: 'b'}],
     });
   });
@@ -377,61 +365,7 @@ describe('onUpdate', function() {
     expect(onViewableItemsChanged.mock.calls.length).toBe(1);
     expect(onViewableItemsChanged.mock.calls[0][0]).toEqual({
       changed: [{isViewable: true, key: 'a'}],
-      viewabilityConfig: {
-        waitForInteraction: true,
-        viewAreaCoveragePercentThreshold: 0,
-      },
       viewableItems: [{isViewable: true, key: 'a'}],
-    });
-  });
-
-  it('returns the right visible row after the underlying data changed', function() {
-    const helper = new ViewabilityHelper();
-    rowFrames = {
-      a: {y: 0, height: 200},
-      b: {y: 200, height: 200},
-    };
-    data = [{key: 'a'}, {key: 'b'}];
-    const onViewableItemsChanged = jest.fn();
-    helper.onUpdate(
-      data.length,
-      0,
-      200,
-      getFrameMetrics,
-      createViewToken,
-      onViewableItemsChanged,
-    );
-    expect(onViewableItemsChanged.mock.calls.length).toBe(1);
-    expect(onViewableItemsChanged.mock.calls[0][0]).toEqual({
-      changed: [{isViewable: true, key: 'a'}],
-      viewabilityConfig: {viewAreaCoveragePercentThreshold: 0},
-      viewableItems: [{isViewable: true, key: 'a'}],
-    });
-
-    // update data
-    rowFrames = {
-      c: {y: 0, height: 200},
-      a: {y: 200, height: 200},
-      b: {y: 400, height: 200},
-    };
-    data = [{key: 'c'}, {key: 'a'}, {key: 'b'}];
-
-    helper.resetViewableIndices();
-
-    helper.onUpdate(
-      data.length,
-      0,
-      200,
-      getFrameMetrics,
-      createViewToken,
-      onViewableItemsChanged,
-    );
-
-    expect(onViewableItemsChanged.mock.calls.length).toBe(2);
-    expect(onViewableItemsChanged.mock.calls[1][0]).toEqual({
-      changed: [{isViewable: true, key: 'c'}, {isViewable: false, key: 'a'}],
-      viewabilityConfig: {viewAreaCoveragePercentThreshold: 0},
-      viewableItems: [{isViewable: true, key: 'c'}],
     });
   });
 });

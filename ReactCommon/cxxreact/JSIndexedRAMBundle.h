@@ -1,14 +1,10 @@
-// Copyright (c) 2004-present, Facebook, Inc.
-
-// This source code is licensed under the MIT license found in the
-// LICENSE file in the root directory of this source tree.
+// Copyright 2004-present Facebook. All Rights Reserved.
 
 #pragma once
 
 #include <fstream>
 #include <memory>
 
-#include <cxxreact/JSBigString.h>
 #include <cxxreact/JSModulesUnbundle.h>
 
 #ifndef RN_EXPORT
@@ -18,10 +14,11 @@
 namespace facebook {
 namespace react {
 
+class JSBigString;
+class JSBigBufferString;
+
 class RN_EXPORT JSIndexedRAMBundle : public JSModulesUnbundle {
 public:
-  static std::function<std::unique_ptr<JSModulesUnbundle>(std::string)> buildFactory();
-
   // Throws std::runtime_error on failure.
   JSIndexedRAMBundle(const char *sourceURL);
 

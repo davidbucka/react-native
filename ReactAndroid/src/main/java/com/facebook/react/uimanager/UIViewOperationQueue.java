@@ -1,8 +1,10 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  */
 
 package com.facebook.react.uimanager;
@@ -21,7 +23,6 @@ import com.facebook.react.bridge.SoftAssertions;
 import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.common.ReactConstants;
 import com.facebook.react.modules.core.ReactChoreographer;
-import com.facebook.react.uimanager.common.SizeMonitoringFrameLayout;
 import com.facebook.react.uimanager.debug.NotThreadSafeViewHierarchyUpdateDebugListener;
 import com.facebook.systrace.Systrace;
 import com.facebook.systrace.SystraceMessage;
@@ -93,54 +94,6 @@ public class UIViewOperationQueue {
     @Override
     public void execute() {
       mNativeViewHierarchyManager.updateProperties(mTag, mProps);
-    }
-  }
-
-  private final class EmitOnLayoutEventOperation extends ViewOperation {
-
-    private final int mScreenX;
-    private final int mScreenY;
-    private final int mScreenWidth;
-    private final int mScreenHeight;
-
-    public EmitOnLayoutEventOperation(
-        int tag,
-        int screenX,
-        int screenY,
-        int screenWidth,
-        int screenHeight) {
-      super(tag);
-      mScreenX = screenX;
-      mScreenY = screenY;
-      mScreenWidth = screenWidth;
-      mScreenHeight = screenHeight;
-    }
-
-    @Override
-    public void execute() {
-      mReactApplicationContext.getNativeModule(UIManagerModule.class)
-        .getEventDispatcher()
-        .dispatchEvent(OnLayoutEvent.obtain(
-          mTag,
-          mScreenX,
-          mScreenY,
-          mScreenWidth,
-          mScreenHeight));
-    }
-  }
-
-  private final class UpdateInstanceHandleOperation extends ViewOperation {
-
-    private final long mInstanceHandle;
-
-    private UpdateInstanceHandleOperation(int tag, long instanceHandle) {
-      super(tag);
-      mInstanceHandle = instanceHandle;
-    }
-
-    @Override
-    public void execute() {
-      mNativeViewHierarchyManager.updateInstanceHandle(mTag, mInstanceHandle);
     }
   }
 
@@ -313,30 +266,20 @@ public class UIViewOperationQueue {
   private final class ShowPopupMenuOperation extends ViewOperation {
 
     private final ReadableArray mItems;
-    private final Callback mError;
     private final Callback mSuccess;
 
     public ShowPopupMenuOperation(
         int tag,
         ReadableArray items,
-        Callback error,
         Callback success) {
       super(tag);
       mItems = items;
-      mError = error;
       mSuccess = success;
     }
 
     @Override
     public void execute() {
-      mNativeViewHierarchyManager.showPopupMenu(mTag, mItems, mSuccess, mError);
-    }
-  }
-
-  private final class DismissPopupMenuOperation implements UIOperation {
-    @Override
-    public void execute() {
-      mNativeViewHierarchyManager.dismissPopupMenu();
+      mNativeViewHierarchyManager.showPopupMenu(mTag, mItems, mSuccess);
     }
   }
 
@@ -695,7 +638,7 @@ public class UIViewOperationQueue {
   public void enqueueDispatchCommand(
       int reactTag,
       int commandId,
-      @Nullable ReadableArray commandArgs) {
+      ReadableArray commandArgs) {
     mOperations.add(new DispatchCommandOperation(reactTag, commandId, commandArgs));
   }
 
@@ -708,11 +651,7 @@ public class UIViewOperationQueue {
       ReadableArray items,
       Callback error,
       Callback success) {
-    mOperations.add(new ShowPopupMenuOperation(reactTag, items, error, success));
-  }
-
-  public void enqueueDismissPopupMenu() {
-    mOperations.add(new DismissPopupMenuOperation());
+    mOperations.add(new ShowPopupMenuOperation(reactTag, items, success));
   }
 
   public void enqueueCreateView(
@@ -730,23 +669,9 @@ public class UIViewOperationQueue {
     }
   }
 
-  public void enqueueUpdateInstanceHandle(int reactTag, long instanceHandle) {
-    mOperations.add(new UpdateInstanceHandleOperation(reactTag, instanceHandle));
-  }
-
   public void enqueueUpdateProperties(int reactTag, String className, ReactStylesDiffMap props) {
     mOperations.add(new UpdatePropertiesOperation(reactTag, props));
   }
-
-  public void enqueueOnLayoutEvent(
-    int tag,
-    int screenX,
-    int screenY,
-    int screenWidth,
-    int screenHeight) {
-    mOperations.add(new EmitOnLayoutEventOperation(tag, screenX, screenY, screenWidth, screenHeight));
-  }
-
 
   public void enqueueUpdateLayout(
       int parentTag,
@@ -833,11 +758,7 @@ public class UIViewOperationQueue {
     mOperations.add(new UIBlockOperation(block));
   }
 
-  public void prependUIBlock(UIBlock block) {
-    mOperations.add(0, new UIBlockOperation(block));
-  }
-
-  public void dispatchViewUpdates(
+  /* package */ void dispatchViewUpdates(
       final int batchId, final long commitStartTime, final long layoutTime) {
     SystraceMessage.beginSection(
       Systrace.TRACE_TAG_REACT_JAVA_BRIDGE,
@@ -949,7 +870,7 @@ public class UIViewOperationQueue {
       }
 
       // In the case where the frame callback isn't enqueued, the UI isn't being displayed or is being
-      // destroyed. In this case it's no longer important to align to frames, but it is important to make
+      // destroyed. In this case it's no longer important to align to frames, but it is imporant to make
       // sure any late-arriving UI commands are executed.
       if (!mIsDispatchUIFrameCallbackEnqueued) {
         UiThreadUtil.runOnUiThread(

@@ -1,11 +1,18 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  */
 
 package com.facebook.react.flat;
+
+import javax.annotation.Nullable;
+
+import java.util.LinkedList;
+import java.util.List;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -13,6 +20,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Animatable;
 import android.net.Uri;
+
 import com.facebook.drawee.controller.ControllerListener;
 import com.facebook.drawee.drawable.ScalingUtils.ScaleType;
 import com.facebook.drawee.generic.GenericDraweeHierarchy;
@@ -23,16 +31,12 @@ import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.views.image.GlobalImageLoadListener;
 import com.facebook.react.views.image.ImageLoadEvent;
 import com.facebook.react.views.image.ImageResizeMode;
 import com.facebook.react.views.image.ReactImageView;
 import com.facebook.react.views.imagehelper.ImageSource;
 import com.facebook.react.views.imagehelper.MultiSourceHelper;
 import com.facebook.react.views.imagehelper.MultiSourceHelper.MultiSourceResult;
-import java.util.LinkedList;
-import java.util.List;
-import javax.annotation.Nullable;
 
 /**
  * DrawImageWithDrawee is a DrawCommand that can draw a local or remote image.
@@ -44,7 +48,6 @@ import javax.annotation.Nullable;
   private static final String LOCAL_CONTENT_SCHEME = "content";
 
   private final List<ImageSource> mSources = new LinkedList<>();
-  private final @Nullable GlobalImageLoadListener mGlobalImageLoadListener;
   private @Nullable DraweeRequestHelper mRequestHelper;
   private @Nullable PorterDuffColorFilter mColorFilter;
   private ScaleType mScaleType = ImageResizeMode.defaultValue();
@@ -55,10 +58,6 @@ import javax.annotation.Nullable;
   private boolean mProgressiveRenderingEnabled;
   private int mFadeDuration = ReactImageView.REMOTE_IMAGE_FADE_DURATION_MS;
   private @Nullable FlatViewGroup.InvalidateCallback mCallback;
-
-  public DrawImageWithDrawee(@Nullable GlobalImageLoadListener globalImageLoadListener) {
-    mGlobalImageLoadListener = globalImageLoadListener;
-  }
 
   @Override
   public boolean hasImageRequest() {
@@ -275,9 +274,6 @@ import javax.annotation.Nullable;
         .setResizeOptions(resizeOptions)
         .setProgressiveRenderingEnabled(mProgressiveRenderingEnabled)
         .build();
-    if (mGlobalImageLoadListener != null) {
-      mGlobalImageLoadListener.onLoadAttempt(source.getUri());
-    }
 
     ImageRequest cachedImageRequest = null;
     if (cachedSource != null) {

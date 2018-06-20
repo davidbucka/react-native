@@ -1,8 +1,10 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  */
 
 package com.facebook.react.uimanager.events;
@@ -17,15 +19,11 @@ import com.facebook.react.uimanager.PixelUtil;
 /**
  * Class responsible for generating catalyst touch events based on android {@link MotionEvent}.
  */
-public class TouchesHelper {
+/*package*/ class TouchesHelper {
 
-  public static final String TARGET_KEY = "target";
-  public static final String CHANGED_TOUCHES_KEY = "changedTouches";
-  public static final String TOUCHES_KEY = "touches";
-  public static final String TOP_TOUCH_END_KEY = "topTouchEnd";
-  public static final String TOP_TOUCH_CANCEL_KEY = "topTouchCancel";
   private static final String PAGE_X_KEY = "pageX";
   private static final String PAGE_Y_KEY = "pageY";
+  private static final String TARGET_KEY = "target";
   private static final String TIMESTAMP_KEY = "timestamp";
   private static final String POINTER_IDENTIFIER_KEY = "identifier";
 

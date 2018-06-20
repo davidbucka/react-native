@@ -1,15 +1,13 @@
-load("//ReactNative:DEFS.bzl", "rn_android_library", "rn_android_prebuilt_aar", "rn_prebuilt_jar")
-
-rn_android_library(
+android_library(
     name = "textlayoutbuilder",
-    visibility = ["//ReactAndroid/..."],
     exported_deps = [
         ":staticlayoutproxy",
         ":textlayoutbuilder-base",
     ],
+    visibility = ["//ReactAndroid/..."],
 )
 
-rn_android_prebuilt_aar(
+android_prebuilt_aar(
     name = "textlayoutbuilder-base",
     aar = ":textlayoutbuilder-base-aar",
     visibility = ["//ReactAndroid/..."],
@@ -21,7 +19,7 @@ remote_file(
     url = "mvn:com.facebook.fbui.textlayoutbuilder:textlayoutbuilder:aar:1.0.0",
 )
 
-rn_prebuilt_jar(
+prebuilt_jar(
     name = "staticlayoutproxy",
     binary_jar = ":staticlayoutproxy-jar",
     visibility = ["//ReactAndroid/..."],

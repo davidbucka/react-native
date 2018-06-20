@@ -1,8 +1,10 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  */
 
 package com.facebook.react.bridge;
@@ -12,7 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Java {@link ArrayList} backed implementation of {@link ReadableArray} and {@link WritableArray}
+ * Java {@link ArrayList} backed impementation of {@link ReadableArray} and {@link WritableArray}
  * Instances of this class SHOULD NOT be used for communication between java and JS, use instances
  * of {@link WritableNativeArray} created via {@link Arguments#createArray} or just
  * {@link ReadableArray} interface if you want your "native" module method to take an array from JS
@@ -32,34 +34,6 @@ public class JavaOnlyArray implements ReadableArray, WritableArray {
 
   public static JavaOnlyArray of(Object... values) {
     return new JavaOnlyArray(values);
-  }
-
-  public static JavaOnlyArray deepClone(ReadableArray ary) {
-    JavaOnlyArray res = new JavaOnlyArray();
-    for (int i = 0, size = ary.size(); i < size; i++) {
-      ReadableType type = ary.getType(i);
-      switch (type) {
-        case Null:
-          res.pushNull();
-          break;
-        case Boolean:
-          res.pushBoolean(ary.getBoolean(i));
-          break;
-        case Number:
-          res.pushDouble(ary.getDouble(i));
-          break;
-        case String:
-          res.pushString(ary.getString(i));
-          break;
-        case Map:
-          res.pushMap(JavaOnlyMap.deepClone(ary.getMap(i)));
-          break;
-        case Array:
-          res.pushArray(deepClone(ary.getArray(i)));
-          break;
-      }
-    }
-    return res;
   }
 
   private JavaOnlyArray(Object... values) {
@@ -86,12 +60,12 @@ public class JavaOnlyArray implements ReadableArray, WritableArray {
 
   @Override
   public double getDouble(int index) {
-    return ((Number) mBackingList.get(index)).doubleValue();
+    return (Double) mBackingList.get(index);
   }
 
   @Override
   public int getInt(int index) {
-    return ((Number) mBackingList.get(index)).intValue();
+    return (Integer) mBackingList.get(index);
   }
 
   @Override

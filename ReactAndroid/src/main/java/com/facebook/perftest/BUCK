@@ -1,6 +1,4 @@
-load("//ReactNative:DEFS.bzl", "rn_android_library")
-
-rn_android_library(
+android_library(
     name = "perftest",
     srcs = glob(["*.java"]),
     visibility = [

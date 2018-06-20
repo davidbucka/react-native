@@ -1,16 +1,23 @@
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
+ * @providesModule Blob
  * @flow
- * @format
  */
 
 'use strict';
 
-import type {BlobData, BlobOptions} from 'BlobTypes';
+const invariant = require('fbjs/lib/invariant');
+const uuid = require('uuid');
+
+const { BlobModule } = require('NativeModules');
+
+import type { BlobProps } from 'BlobTypes';
 
 /**
  * Opaque JS representation of some binary data in native.
@@ -50,16 +57,51 @@ import type {BlobData, BlobOptions} from 'BlobTypes';
  * Reference: https://developer.mozilla.org/en-US/docs/Web/API/Blob
  */
 class Blob {
-  _data: ?BlobData;
+  /**
+   * Size of the data contained in the Blob object, in bytes.
+   */
+  size: number;
+  /*
+   * String indicating the MIME type of the data contained in the Blob.
+   * If the type is unknown, this string is empty.
+   */
+  type: string;
+
+  /*
+   * Unique id to identify the blob on native side (non-standard)
+   */
+  blobId: string;
+  /*
+   * Offset to indicate part of blob, used when sliced (non-standard)
+   */
+  offset: number;
+
+  /**
+   * Construct blob instance from blob data from native.
+   * Used internally by modules like XHR, WebSocket, etc.
+   */
+  static create(props: BlobProps): Blob {
+    return Object.assign(Object.create(Blob.prototype), props);
+  }
 
   /**
    * Constructor for JS consumers.
    * Currently we only support creating Blobs from other Blobs.
    * Reference: https://developer.mozilla.org/en-US/docs/Web/API/Blob/Blob
    */
-  constructor(parts: Array<Blob | string> = [], options?: BlobOptions) {
-    const BlobManager = require('BlobManager');
-    this.data = BlobManager.createFromParts(parts, options).data;
+  constructor(parts: Array<Blob>, options: any) {
+    const blobId = uuid();
+    let size = 0;
+    parts.forEach((part) => {
+      invariant(part instanceof Blob, 'Can currently only create a Blob from other Blobs');
+      size += part.size;
+    });
+    BlobModule.createFromParts(parts, blobId);
+    return Blob.create({
+      blobId,
+      offset: 0,
+      size,
+    });
   }
 
   /*
@@ -67,22 +109,9 @@ class Blob {
    * the data in the specified range of bytes of the source Blob.
    * Reference: https://developer.mozilla.org/en-US/docs/Web/API/Blob/slice
    */
-  set data(data: ?BlobData) {
-    this._data = data;
-  }
-
-  get data(): BlobData {
-    if (!this._data) {
-      throw new Error('Blob has been closed and is no longer available');
-    }
-
-    return this._data;
-  }
-
   slice(start?: number, end?: number): Blob {
-    const BlobManager = require('BlobManager');
-    let {offset, size} = this.data;
-
+    let offset = this.offset;
+    let size = this.size;
     if (typeof start === 'number') {
       if (start > size) {
         start = size;
@@ -97,8 +126,8 @@ class Blob {
         size = end - start;
       }
     }
-    return BlobManager.createFromOptions({
-      blobId: this.data.blobId,
+    return Blob.create({
+      blobId: this.blobId,
       offset,
       size,
     });
@@ -117,24 +146,7 @@ class Blob {
    * `new Blob([blob, ...])` actually copies the data in memory.
    */
   close() {
-    const BlobManager = require('BlobManager');
-    BlobManager.release(this.data.blobId);
-    this.data = null;
-  }
-
-  /**
-   * Size of the data contained in the Blob object, in bytes.
-   */
-  get size(): number {
-    return this.data.size;
-  }
-
-  /*
-   * String indicating the MIME type of the data contained in the Blob.
-   * If the type is unknown, this string is empty.
-   */
-  get type(): string {
-    return this.data.type || '';
+    BlobModule.release(this.blobId);
   }
 }
 

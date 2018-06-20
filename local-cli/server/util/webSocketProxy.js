@@ -1,19 +1,19 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * @format
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  */
-
 'use strict';
+
 
 function attachToServer(server, path) {
   var WebSocketServer = require('ws').Server;
   var wss = new WebSocketServer({
     server: server,
-    path: path,
+    path: path
   });
   var debuggerSocket, clientSocket;
 
@@ -24,7 +24,7 @@ function attachToServer(server, path) {
 
     try {
       dest.send(message);
-    } catch (e) {
+    } catch(e) {
       console.warn(e);
       // Sometimes this call throws 'not opened'
     }
@@ -39,7 +39,8 @@ function attachToServer(server, path) {
         return;
       }
       debuggerSocket = ws;
-      debuggerSocket.onerror = debuggerSocket.onclose = () => {
+      debuggerSocket.onerror =
+      debuggerSocket.onclose = () => {
         debuggerSocket = null;
         if (clientSocket) {
           clientSocket.close(1011, 'Debugger was disconnected');
@@ -52,7 +53,8 @@ function attachToServer(server, path) {
         clientSocket.close(1011, 'Another client connected');
       }
       clientSocket = ws;
-      clientSocket.onerror = clientSocket.onclose = () => {
+      clientSocket.onerror =
+      clientSocket.onclose = () => {
         clientSocket = null;
         send(debuggerSocket, JSON.stringify({method: '$disconnected'}));
       };
@@ -66,10 +68,10 @@ function attachToServer(server, path) {
     server: wss,
     isChromeConnected: function() {
       return !!debuggerSocket;
-    },
+    }
   };
 }
 
 module.exports = {
-  attachToServer: attachToServer,
+  attachToServer: attachToServer
 };

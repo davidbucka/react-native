@@ -1,13 +1,16 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @format
+ * @providesModule InitializeCore
  * @flow
  */
 
+/* eslint-disable strict */
 /* globals window: true */
 
 /**
@@ -25,8 +28,6 @@
  */
 'use strict';
 
-const {polyfillObjectProperty, polyfillGlobal} = require('PolyfillFunctions');
-
 if (global.GLOBAL === undefined) {
   global.GLOBAL = global;
 }
@@ -35,13 +36,50 @@ if (global.window === undefined) {
   global.window = global;
 }
 
-// Set up collections
-const _shouldPolyfillCollection = require('_shouldPolyfillES6Collection');
-if (_shouldPolyfillCollection('Map')) {
-  polyfillGlobal('Map', () => require('Map'));
+const defineLazyObjectProperty = require('defineLazyObjectProperty');
+
+/**
+ * Sets an object's property. If a property with the same name exists, this will
+ * replace it but maintain its descriptor configuration. The property will be
+ * replaced with a lazy getter.
+ *
+ * In DEV mode the original property value will be preserved as `original[PropertyName]`
+ * so that, if necessary, it can be restored. For example, if you want to route
+ * network requests through DevTools (to trace them):
+ *
+ *   global.XMLHttpRequest = global.originalXMLHttpRequest;
+ *
+ * @see https://github.com/facebook/react-native/issues/934
+ */
+function defineLazyProperty<T>(
+  object: Object,
+  name: string,
+  getValue: () => T,
+): void {
+  const descriptor = Object.getOwnPropertyDescriptor(object, name);
+  if (__DEV__ && descriptor) {
+    const backupName = `original${name[0].toUpperCase()}${name.substr(1)}`;
+    Object.defineProperty(object, backupName, {
+      ...descriptor,
+      value: object[name],
+    });
+  }
+
+  const {enumerable, writable, configurable} = descriptor || {};
+  if (descriptor && !configurable) {
+    console.error('Failed to set polyfill. ' + name + ' is not configurable.');
+    return;
+  }
+
+  defineLazyObjectProperty(object, name, {
+    get: getValue,
+    enumerable: enumerable !== false,
+    writable: writable !== false,
+  });
 }
-if (_shouldPolyfillCollection('Set')) {
-  polyfillGlobal('Set', () => require('Set'));
+
+function polyfillGlobal<T>(name: string, getValue: () => T): void {
+  defineLazyProperty(global, name, getValue);
 }
 
 // Set up process
@@ -54,7 +92,6 @@ if (!global.process.env.NODE_ENV) {
 // Setup the Systrace profiling hooks if necessary
 if (global.__RCTProfileIsProfiling) {
   const Systrace = require('Systrace');
-  Systrace.installReactHook();
   Systrace.setEnabled(true);
 }
 
@@ -68,7 +105,9 @@ if (!global.__fbDisableExceptionsManager) {
     try {
       ExceptionsManager.handleException(e, isFatal);
     } catch (ee) {
+      /* eslint-disable no-console-disallow */
       console.log('Failed to print error: ', ee.message);
+      /* eslint-enable no-console-disallow */
       throw e;
     }
   };
@@ -77,9 +116,31 @@ if (!global.__fbDisableExceptionsManager) {
   ErrorUtils.setGlobalHandler(handleError);
 }
 
-// Check for compatibility between the JS and native code
-const ReactNativeVersionCheck = require('ReactNativeVersionCheck');
-ReactNativeVersionCheck.checkVersions();
+const formatVersion = version =>
+  `${version.major}.${version.minor}.${version.patch}` +
+  (version.prerelease !== null ? `-${version.prerelease}` : '');
+
+const ReactNativeVersion = require('ReactNativeVersion');
+const nativeVersion = require('NativeModules').PlatformConstants.reactNativeVersion;
+if (ReactNativeVersion.version.major !== nativeVersion.major ||
+    ReactNativeVersion.version.minor !== nativeVersion.minor) {
+  throw new Error(
+    `React Native version mismatch.\n\nJavaScript version: ${formatVersion(ReactNativeVersion.version)}\n` +
+    `Native version: ${formatVersion(nativeVersion)}\n\n` +
+    'Make sure that you have rebuilt the native code. If the problem persists ' +
+    'try clearing the watchman and packager caches with `watchman watch-del-all ' +
+    '&& react-native start --reset-cache`.'
+  );
+}
+
+// Set up collections
+const _shouldPolyfillCollection = require('_shouldPolyfillES6Collection');
+if (_shouldPolyfillCollection('Map')) {
+  polyfillGlobal('Map', () => require('Map'));
+}
+if (_shouldPolyfillCollection('Set')) {
+  polyfillGlobal('Set', () => require('Set'));
+}
 
 // Set up Promise
 // The native Promise implementation throws the following error:
@@ -91,9 +152,6 @@ polyfillGlobal('regeneratorRuntime', () => {
   // The require just sets up the global, so make sure when we first
   // invoke it the global does not exist
   delete global.regeneratorRuntime;
-  /* $FlowFixMe(>=0.54.0 site=react_native_oss) This comment suppresses an
-   * error found when Flow v0.54 was deployed. To see the error delete this
-   * comment and run Flow. */
   require('regenerator-runtime/runtime');
   return global.regeneratorRuntime;
 });
@@ -125,8 +183,6 @@ polyfillGlobal('Request', () => require('fetch').Request);
 polyfillGlobal('Response', () => require('fetch').Response);
 polyfillGlobal('WebSocket', () => require('WebSocket'));
 polyfillGlobal('Blob', () => require('Blob'));
-polyfillGlobal('File', () => require('File'));
-polyfillGlobal('FileReader', () => require('FileReader'));
 polyfillGlobal('URL', () => require('URL'));
 
 // Set up alert
@@ -145,61 +201,20 @@ if (navigator === undefined) {
 }
 
 // see https://github.com/facebook/react-native/issues/10881
-polyfillObjectProperty(navigator, 'product', () => 'ReactNative');
-polyfillObjectProperty(navigator, 'geolocation', () => require('Geolocation'));
+defineLazyProperty(navigator, 'product', () => 'ReactNative');
+defineLazyProperty(navigator, 'geolocation', () => require('Geolocation'));
 
 // Just to make sure the JS gets packaged up. Wait until the JS environment has
 // been initialized before requiring them.
 const BatchedBridge = require('BatchedBridge');
 BatchedBridge.registerLazyCallableModule('Systrace', () => require('Systrace'));
 BatchedBridge.registerLazyCallableModule('JSTimers', () => require('JSTimers'));
-BatchedBridge.registerLazyCallableModule('HeapCapture', () =>
-  require('HeapCapture'),
-);
-BatchedBridge.registerLazyCallableModule('SamplingProfiler', () =>
-  require('SamplingProfiler'),
-);
+BatchedBridge.registerLazyCallableModule('HeapCapture', () => require('HeapCapture'));
+BatchedBridge.registerLazyCallableModule('SamplingProfiler', () => require('SamplingProfiler'));
 BatchedBridge.registerLazyCallableModule('RCTLog', () => require('RCTLog'));
-BatchedBridge.registerLazyCallableModule('RCTDeviceEventEmitter', () =>
-  require('RCTDeviceEventEmitter'),
-);
-BatchedBridge.registerLazyCallableModule('RCTNativeAppEventEmitter', () =>
-  require('RCTNativeAppEventEmitter'),
-);
-BatchedBridge.registerLazyCallableModule('PerformanceLogger', () =>
-  require('PerformanceLogger'),
-);
-BatchedBridge.registerLazyCallableModule('JSDevSupportModule', () =>
-  require('JSDevSupportModule'),
-);
-
-global.__fetchSegment = function(
-  segmentId: number,
-  options: {|+otaBuildNumber: ?string|},
-  callback: (?Error) => void,
-) {
-  const {SegmentFetcher} = require('NativeModules');
-  if (!SegmentFetcher) {
-    throw new Error(
-      'SegmentFetcher is missing. Please ensure that it is ' +
-        'included as a NativeModule.',
-    );
-  }
-
-  SegmentFetcher.fetchSegment(
-    segmentId,
-    options,
-    (errorObject: ?{message: string, code: string}) => {
-      if (errorObject) {
-        const error = new Error(errorObject.message);
-        (error: any).code = errorObject.code;
-        callback(error);
-      }
-
-      callback(null);
-    },
-  );
-};
+BatchedBridge.registerLazyCallableModule('RCTDeviceEventEmitter', () => require('RCTDeviceEventEmitter'));
+BatchedBridge.registerLazyCallableModule('RCTNativeAppEventEmitter', () => require('RCTNativeAppEventEmitter'));
+BatchedBridge.registerLazyCallableModule('PerformanceLogger', () => require('PerformanceLogger'));
 
 // Set up devtools
 if (__DEV__) {
@@ -214,9 +229,6 @@ if (__DEV__) {
 
     // Set up inspector
     const JSInspector = require('JSInspector');
-    /* $FlowFixMe(>=0.56.0 site=react_native_fb,react_native_oss) This comment
-     * suppresses an error found when Flow v0.56 was deployed. To see the error
-     * delete this comment and run Flow. */
     JSInspector.registerAgent(require('NetworkAgent'));
   }
 }

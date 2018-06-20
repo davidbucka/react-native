@@ -1,22 +1,26 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  */
 
 package com.facebook.react.flat;
+
+import javax.annotation.Nullable;
 
 import android.graphics.Typeface;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
+
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.uimanager.PixelUtil;
-import com.facebook.react.uimanager.ReactShadowNodeImpl;
+import com.facebook.react.uimanager.ReactShadowNode;
 import com.facebook.react.uimanager.ViewProps;
 import com.facebook.react.uimanager.annotations.ReactProp;
-import javax.annotation.Nullable;
 
 /**
  * RCTVirtualText is a {@link FlatTextShadowNode} that can contain font styling information.
@@ -36,7 +40,7 @@ import javax.annotation.Nullable;
   private ShadowStyleSpan mShadowStyleSpan = ShadowStyleSpan.INSTANCE;
 
   @Override
-  public void addChildAt(ReactShadowNodeImpl child, int i) {
+  public void addChildAt(ReactShadowNode child, int i) {
     super.addChildAt(child, i);
     notifyChanged(true);
   }

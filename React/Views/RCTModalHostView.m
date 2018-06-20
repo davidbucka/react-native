@@ -1,8 +1,10 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  */
 
 #import "RCTModalHostView.h"
@@ -16,9 +18,6 @@
 #import "RCTUIManager.h"
 #import "RCTUtils.h"
 #import "UIView+React.h"
-#if TARGET_OS_TV
-#import "RCTTVRemoteHandler.h"
-#endif
 
 @implementation RCTModalHostView
 {
@@ -50,7 +49,6 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:coder)
 #if TARGET_OS_TV
     _menuButtonGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(menuButtonPressed:)];
     _menuButtonGestureRecognizer.allowedPressTypes = @[@(UIPressTypeMenu)];
-    self.tvRemoteHandler = [RCTTVRemoteHandler new];
 #endif
     _isPresented = NO;
 
@@ -120,11 +118,6 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:coder)
   [super insertReactSubview:subview atIndex:atIndex];
   [_touchHandler attachToView:subview];
 #if TARGET_OS_TV
-  for (NSString *key in [self.tvRemoteHandler.tvRemoteGestureRecognizers allKeys]) {
-    if (![key isEqualToString:RCTTVRemoteEventMenu]) {
-      [subview addGestureRecognizer:self.tvRemoteHandler.tvRemoteGestureRecognizers[key]];
-    }
-  }
   if (_onRequestClose) {
     [subview addGestureRecognizer:_menuButtonGestureRecognizer];
   }
@@ -146,9 +139,6 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:coder)
   if (_menuButtonGestureRecognizer) {
     [subview removeGestureRecognizer:_menuButtonGestureRecognizer];
   }
-  for (UIGestureRecognizer *gr in self.tvRemoteHandler.tvRemoteGestureRecognizers) {
-    [subview removeGestureRecognizer:gr];
-  }
 #endif
   _reactSubview = nil;
 }
@@ -169,12 +159,6 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:coder)
 - (void)didMoveToWindow
 {
   [super didMoveToWindow];
-
-  // In the case where there is a LayoutAnimation, we will be reinserted into the view hierarchy but only for aesthetic purposes.
-  // In such a case, we should NOT represent the <Modal>.
-  if (!self.userInteractionEnabled && ![self.superview.reactSubviews containsObject:self]) {
-    return;
-  }
 
   if (!_isPresented && self.window) {
     RCTAssert(self.reactViewController, @"Can't present modal view controller without a presenting view controller");

@@ -1,8 +1,10 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  */
 
 #import "RCTNavigator.h"
@@ -45,7 +47,7 @@ NSInteger kNeverProgressed = -10000;
 
 @interface UINavigationController ()
 
-// need to declare this since `UINavigationController` doesn't publicly declare the fact that it implements
+// need to declare this since `UINavigationController` doesnt publicly declare the fact that it implements
 // UINavigationBarDelegate :(
 - (BOOL)navigationBar:(UINavigationBar *)navigationBar shouldPopItem:(UINavigationItem *)item;
 
@@ -464,7 +466,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
 
 - (void)didUpdateReactSubviews
 {
-  // Do nothing, as subviews are managed by `uiManagerDidPerformMounting`
+  // Do nothing, as subviews are managed by `reactBridgeDidFinishTransaction`
 }
 
 - (void)layoutSubviews
@@ -508,7 +510,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
   return superview ?: self.reactNavSuperviewLink;
 }
 
-- (void)uiManagerDidPerformMounting
+- (void)reactBridgeDidFinishTransaction
 {
   // we can't hook up the VC hierarchy in 'init' because the subviews aren't
   // hooked up yet, so we do it on demand here

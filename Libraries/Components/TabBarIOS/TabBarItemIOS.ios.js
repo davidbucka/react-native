@@ -1,26 +1,27 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @format
+ * @providesModule TabBarItemIOS
  * @noflow
  */
-
 'use strict';
 
-const ColorPropType = require('ColorPropType');
-const Image = require('Image');
-const React = require('React');
+var ColorPropType = require('ColorPropType');
+var Image = require('Image');
+var React = require('React');
 const PropTypes = require('prop-types');
-const StaticContainer = require('StaticContainer.react');
-const StyleSheet = require('StyleSheet');
-const View = require('View');
+var StaticContainer = require('StaticContainer.react');
+var StyleSheet = require('StyleSheet');
+var View = require('View');
 
 const ViewPropTypes = require('ViewPropTypes');
 
-const requireNativeComponent = require('requireNativeComponent');
+var requireNativeComponent = require('requireNativeComponent');
 
 class TabBarItemIOS extends React.Component {
   static propTypes = {
@@ -28,7 +29,10 @@ class TabBarItemIOS extends React.Component {
     /**
      * Little red bubble that sits at the top right of the icon.
      */
-    badge: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    badge: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.number,
+    ]),
     /**
      * Background color for the badge. Available since iOS 10.
      */
@@ -98,51 +102,52 @@ class TabBarItemIOS extends React.Component {
     hasBeenSelected: false,
   };
 
-  UNSAFE_componentWillMount() {
+  componentWillMount() {
     if (this.props.selected) {
       this.setState({hasBeenSelected: true});
     }
   }
 
-  UNSAFE_componentWillReceiveProps(nextProps: {selected?: boolean}) {
+  componentWillReceiveProps(nextProps: { selected?: boolean }) {
     if (this.state.hasBeenSelected || nextProps.selected) {
       this.setState({hasBeenSelected: true});
     }
   }
 
   render() {
-    const {style, children, ...props} = this.props;
+    var {style, children, ...props} = this.props;
 
     // if the tab has already been shown once, always continue to show it so we
     // preserve state between tab transitions
     if (this.state.hasBeenSelected) {
-      var tabContents = (
+      var tabContents =
         <StaticContainer shouldUpdate={this.props.selected}>
           {children}
-        </StaticContainer>
-      );
+        </StaticContainer>;
     } else {
       var tabContents = <View />;
     }
 
     return (
-      <RCTTabBarItem {...props} style={[styles.tab, style]}>
+      <RCTTabBarItem
+        {...props}
+        style={[styles.tab, style]}>
         {tabContents}
       </RCTTabBarItem>
     );
   }
 }
 
-const styles = StyleSheet.create({
+var styles = StyleSheet.create({
   tab: {
     position: 'absolute',
     top: 0,
     right: 0,
     bottom: 0,
     left: 0,
-  },
+  }
 });
 
-const RCTTabBarItem = requireNativeComponent('RCTTabBarItem');
+var RCTTabBarItem = requireNativeComponent('RCTTabBarItem', TabBarItemIOS);
 
 module.exports = TabBarItemIOS;

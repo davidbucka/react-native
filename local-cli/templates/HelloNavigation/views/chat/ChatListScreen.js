@@ -1,10 +1,10 @@
-/** @format */
+'use strict';
 
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
   ActivityIndicator,
   Image,
-  FlatList,
+  ListView,
   Platform,
   StyleSheet,
   View,
@@ -13,48 +13,55 @@ import ListItem from '../../components/ListItem';
 import Backend from '../../lib/Backend';
 
 export default class ChatListScreen extends Component {
+
   static navigationOptions = {
     title: 'Chats',
-    header: Platform.OS === 'ios' ? undefined : null,
-    tabBarIcon: ({tintColor}) => (
-      <Image
-        // Using react-native-vector-icons works here too
-        source={require('./chat-icon.png')}
-        style={[styles.icon, {tintColor: tintColor}]}
-      />
-    ),
-  };
+    header: {
+      visible: Platform.OS === 'ios',
+    },
+    tabBar: {
+      icon: ({ tintColor }) => (
+        <Image
+          // Using react-native-vector-icons works here too
+          source={require('./chat-icon.png')}
+          style={[styles.icon, {tintColor: tintColor}]}
+        />
+      ),
+    },
+  }
 
   constructor(props) {
     super(props);
+    const ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     this.state = {
       isLoading: true,
+      dataSource: ds,
     };
   }
 
   async componentDidMount() {
     const chatList = await Backend.fetchChatList();
-    this.setState(prevState => ({
-      chatList,
+    this.setState((prevState) => ({
+      dataSource: prevState.dataSource.cloneWithRows(chatList),
       isLoading: false,
     }));
   }
 
-  // Binding the function so it can be passed to FlatList below
-  // and 'this' works properly inside renderItem
-  renderItem = ({item}) => {
+  // Binding the function so it can be passed to ListView below
+  // and 'this' works properly inside renderRow
+  renderRow = (name) => {
     return (
       <ListItem
-        label={item}
+        label={name}
         onPress={() => {
           // Start fetching in parallel with animating
           this.props.navigation.navigate('Chat', {
-            name: item,
+            name: name,
           });
         }}
       />
     );
-  };
+  }
 
   render() {
     if (this.state.isLoading) {
@@ -65,10 +72,9 @@ export default class ChatListScreen extends Component {
       );
     }
     return (
-      <FlatList
-        data={this.state.chatList}
-        renderItem={this.renderItem}
-        keyExtractor={(item, index) => index}
+      <ListView
+        dataSource={this.state.dataSource}
+        renderRow={this.renderRow}
         style={styles.listView}
       />
     );

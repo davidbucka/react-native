@@ -1,13 +1,14 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @format
+ * @providesModule EventEmitterWithHolding
  * @flow
  */
-
 'use strict';
 
 import type EmitterSubscription from 'EmitterSubscription';
@@ -27,6 +28,7 @@ import type EventHolder from 'EventHolder';
  * that uses an emitter.
  */
 class EventEmitterWithHolding {
+
   _emitter: EventEmitter;
   _eventHolder: EventHolder;
   _currentEventToken: ?Object;
@@ -81,15 +83,8 @@ class EventEmitterWithHolding {
    *   }); // logs 'abc'
    */
   addRetroactiveListener(
-    eventType: string,
-    listener: Function,
-    context: ?Object,
-  ): EmitterSubscription {
-    const subscription = this._emitter.addListener(
-      eventType,
-      listener,
-      context,
-    );
+    eventType: string, listener: Function, context: ?Object): EmitterSubscription {
+    const subscription = this._emitter.addListener(eventType, listener, context);
 
     this._emittingHeldEvents = true;
     this._eventHolder.emitToListener(eventType, listener, context);

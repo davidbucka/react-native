@@ -1,8 +1,10 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  */
 
 package com.facebook.react.views.textinput;
@@ -231,46 +233,21 @@ public class ReactTextInputPropertyTest {
   @Test
   public void testKeyboardType() {
     ReactEditText view = mManager.createViewInstance(mThemedContext);
-    int numberPadTypeFlags = InputType.TYPE_CLASS_NUMBER;
-    int decimalPadTypeFlags = InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL;
-    int numericTypeFlags =
-        InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL |
-        InputType.TYPE_NUMBER_FLAG_SIGNED;
-    int emailTypeFlags = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS | InputType.TYPE_CLASS_TEXT;
-    int passwordVisibilityFlag = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD &
-        ~InputType.TYPE_TEXT_VARIATION_PASSWORD;
-
-    int generalKeyboardTypeFlags = numericTypeFlags |
-        InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS |
-        InputType.TYPE_CLASS_TEXT | InputType.TYPE_CLASS_PHONE |
-        passwordVisibilityFlag;
 
     mManager.updateProperties(view, buildStyles());
-    assertThat(view.getInputType() & generalKeyboardTypeFlags).isEqualTo(InputType.TYPE_CLASS_TEXT);
+    assertThat(view.getInputType() & InputType.TYPE_CLASS_NUMBER).isZero();
 
     mManager.updateProperties(view, buildStyles("keyboardType", "text"));
-    assertThat(view.getInputType() & generalKeyboardTypeFlags).isEqualTo(InputType.TYPE_CLASS_TEXT);
-
-    mManager.updateProperties(view, buildStyles("keyboardType", "number-pad"));
-    assertThat(view.getInputType() & generalKeyboardTypeFlags).isEqualTo(numberPadTypeFlags);
-
-    mManager.updateProperties(view, buildStyles("keyboardType", "decimal-pad"));
-    assertThat(view.getInputType() & generalKeyboardTypeFlags).isEqualTo(decimalPadTypeFlags);
+    assertThat(view.getInputType() & InputType.TYPE_CLASS_NUMBER).isZero();
 
     mManager.updateProperties(view, buildStyles("keyboardType", "numeric"));
-    assertThat(view.getInputType() & generalKeyboardTypeFlags).isEqualTo(numericTypeFlags);
+    assertThat(view.getInputType() & InputType.TYPE_CLASS_NUMBER).isNotZero();
 
     mManager.updateProperties(view, buildStyles("keyboardType", "email-address"));
-    assertThat(view.getInputType() & generalKeyboardTypeFlags).isEqualTo(emailTypeFlags);
-
-    mManager.updateProperties(view, buildStyles("keyboardType", "phone-pad"));
-    assertThat(view.getInputType() & generalKeyboardTypeFlags).isEqualTo(InputType.TYPE_CLASS_PHONE);
-
-    mManager.updateProperties(view, buildStyles("keyboardType", "visible-password"));
-    assertThat(view.getInputType() & generalKeyboardTypeFlags).isEqualTo(passwordVisibilityFlag);
+    assertThat(view.getInputType() & InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS).isNotZero();
 
     mManager.updateProperties(view, buildStyles("keyboardType", null));
-    assertThat(view.getInputType() & generalKeyboardTypeFlags).isEqualTo(InputType.TYPE_CLASS_TEXT);
+    assertThat(view.getInputType() & InputType.TYPE_CLASS_NUMBER).isZero();
   }
 
   @Test

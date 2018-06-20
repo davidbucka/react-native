@@ -1,8 +1,10 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  */
 
 package com.facebook.react.views.toolbar;
@@ -33,7 +35,6 @@ import javax.annotation.Nullable;
 public class ReactToolbarManager extends ViewGroupManager<ReactToolbar> {
 
   private static final String REACT_CLASS = "ToolbarAndroid";
-  private static final int COMMAND_DISMISS_POPUP_MENUS = 1;
 
   @Override
   public String getName() {
@@ -118,7 +119,8 @@ public class ReactToolbarManager extends ViewGroupManager<ReactToolbar> {
 
   @Override
   protected void addEventEmitters(final ThemedReactContext reactContext, final ReactToolbar view) {
-    final EventDispatcher mEventDispatcher = reactContext.getNativeModule(UIManagerModule.class).getEventDispatcher();
+    final EventDispatcher mEventDispatcher = reactContext.getNativeModule(UIManagerModule.class)
+        .getEventDispatcher();
     view.setNavigationOnClickListener(
         new View.OnClickListener() {
           @Override
@@ -155,27 +157,6 @@ public class ReactToolbarManager extends ViewGroupManager<ReactToolbar> {
   @Override
   public boolean needsCustomLayoutForChildren() {
     return true;
-  }
-
-  @Nullable
-  @Override
-  public Map<String, Integer> getCommandsMap() {
-    return MapBuilder.of("dismissPopupMenus", COMMAND_DISMISS_POPUP_MENUS);
-  }
-
-  @Override
-  public void receiveCommand(ReactToolbar view, int commandType, @Nullable ReadableArray args) {
-    switch (commandType) {
-      case COMMAND_DISMISS_POPUP_MENUS: {
-        view.dismissPopupMenus();
-        return;
-      }
-      default:
-        throw new IllegalArgumentException(String.format(
-          "Unsupported command %d received by %s.",
-          commandType,
-          getClass().getSimpleName()));
-    }
   }
 
   private int[] getDefaultContentInsets(Context context) {

@@ -1,18 +1,20 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @format
+ * @providesModule EventHolder
  * @flow
  */
-
 'use strict';
 
 const invariant = require('fbjs/lib/invariant');
 
 class EventHolder {
+
   _heldEvents: Object;
   _currentEventKey: ?Object;
 
@@ -47,7 +49,7 @@ class EventHolder {
     const eventsOfType = this._heldEvents[eventType];
     const key = {
       eventType: eventType,
-      index: eventsOfType.length,
+      index: eventsOfType.length
     };
     eventsOfType.push(args);
     return key;
@@ -61,7 +63,7 @@ class EventHolder {
    * @param {?object} context - Optional context object to use when invoking
    *   the listener
    */
-  emitToListener(eventType: ?string, listener: Function, context: ?Object) {
+  emitToListener(eventType: ?string , listener: Function, context: ?Object) {
     const eventsOfType = this._heldEvents[eventType];
     if (!eventsOfType) {
       return;
@@ -73,7 +75,7 @@ class EventHolder {
       }
       this._currentEventKey = {
         eventType: eventType,
-        index: index,
+        index: index
       };
       listener.apply(context, eventHeld);
     });
@@ -91,7 +93,7 @@ class EventHolder {
   releaseCurrentEvent() {
     invariant(
       this._currentEventKey !== null,
-      'Not in an emitting cycle; there is no current event',
+      'Not in an emitting cycle; there is no current event'
     );
     this._currentEventKey && this.releaseEvent(this._currentEventKey);
   }

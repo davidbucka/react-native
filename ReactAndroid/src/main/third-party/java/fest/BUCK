@@ -1,15 +1,13 @@
-load("//ReactNative:DEFS.bzl", "rn_android_library", "rn_prebuilt_jar")
-
-rn_android_library(
+android_library(
     name = "fest",
-    visibility = ["//ReactAndroid/..."],
     exported_deps = [
         ":fest-core",
         ":fest-util",
     ],
+    visibility = ["//ReactAndroid/..."],
 )
 
-rn_prebuilt_jar(
+prebuilt_jar(
     name = "fest-core",
     binary_jar = ":fest-binary-jar",
     visibility = ["//ReactAndroid/..."],
@@ -21,7 +19,7 @@ remote_file(
     url = "mvn:org.easytesting:fest-assert-core:jar:2.0M10",
 )
 
-rn_prebuilt_jar(
+prebuilt_jar(
     name = "fest-util",
     binary_jar = ":fest-util-binary-jar",
     visibility = ["//ReactAndroid/..."],

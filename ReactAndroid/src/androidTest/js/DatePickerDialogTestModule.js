@@ -1,10 +1,12 @@
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @format
+ * @providesModule DatePickerDialogTestModule
  */
 
 'use strict';
@@ -17,7 +19,7 @@ var View = require('View');
 
 class DatePickerDialogTestApp extends React.Component {
   render() {
-    return <View />;
+    return (<View />);
   }
 }
 
@@ -32,14 +34,14 @@ var DatePickerDialogTestModule = {
           RecordingModule.recordDismissed();
         }
       },
-      ({code, message}) => RecordingModule.recordError(),
+      ({code, message}) => RecordingModule.recordError()
     );
   },
 };
 
 BatchedBridge.registerCallableModule(
   'DatePickerDialogTestModule',
-  DatePickerDialogTestModule,
+  DatePickerDialogTestModule
 );
 
 module.exports = DatePickerDialogTestModule;

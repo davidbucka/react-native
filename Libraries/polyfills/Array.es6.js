@@ -1,15 +1,17 @@
 /**
  * Copyright (c) 2013-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  *
- * @format
+ * @providesModule Array.es6
  * @polyfill
  * @nolint
  */
 
-/* eslint-disable consistent-this */
+/* eslint-disable */
 
 /**
  * Creates an array from array like objects.
@@ -28,8 +30,9 @@ if (!Array.from) {
 
     var C = this;
     var items = Object(arrayLike);
-    var symbolIterator =
-      typeof Symbol === 'function' ? Symbol.iterator : '@@iterator';
+    var symbolIterator = typeof Symbol === 'function'
+      ? Symbol.iterator
+      : '@@iterator';
     var mapping = typeof mapFn === 'function';
     var usingIterator = typeof items[symbolIterator] === 'function';
     var key = 0;
@@ -37,7 +40,9 @@ if (!Array.from) {
     var value;
 
     if (usingIterator) {
-      ret = typeof C === 'function' ? new C() : [];
+      ret = typeof C === 'function'
+        ? new C()
+        : [];
       var it = items[symbolIterator]();
       var next;
 
@@ -61,7 +66,9 @@ if (!Array.from) {
       len = 0;
     }
 
-    ret = typeof C === 'function' ? new C(len) : new Array(len);
+    ret = typeof C === 'function'
+      ? new C(len)
+      : new Array(len);
 
     while (key < len) {
       value = items[key];

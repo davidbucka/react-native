@@ -1,13 +1,11 @@
-// Copyright (c) 2004-present, Facebook, Inc.
-
-// This source code is licensed under the MIT license found in the
-// LICENSE file in the root directory of this source tree.
+// Copyright 2004-present Facebook. All Rights Reserved.
 
 #pragma once
 
 #include <cstdint>
 #include <memory>
 #include <mutex>
+#include <unordered_map>
 
 #include <cxxreact/JSCNativeModules.h>
 #include <cxxreact/JSExecutor.h>
@@ -16,7 +14,6 @@
 #include <jschelpers/JSCHelpers.h>
 #include <jschelpers/JavaScriptCore.h>
 #include <jschelpers/Value.h>
-#include <privatedata/PrivateDataBase.h>
 
 #ifndef RN_EXPORT
 #define RN_EXPORT __attribute__((visibility("default")))
@@ -26,7 +23,6 @@ namespace facebook {
 namespace react {
 
 class MessageQueueThread;
-class RAMBundleRegistry;
 
 class RN_EXPORT JSCExecutorFactory : public JSExecutorFactory {
 public:
@@ -54,7 +50,7 @@ struct JSCValueEncoder<folly::dynamic> {
   }
 };
 
-class RN_EXPORT JSCExecutor : public JSExecutor, public PrivateDataBase {
+class RN_EXPORT JSCExecutor : public JSExecutor {
 public:
   /**
    * Must be invoked from thread this Executor will run on.
@@ -68,8 +64,8 @@ public:
     std::unique_ptr<const JSBigString> script,
     std::string sourceURL) override;
 
-  virtual void setBundleRegistry(std::unique_ptr<RAMBundleRegistry> bundleRegistry) override;
-  virtual void registerBundle(uint32_t bundleId, const std::string& bundlePath) override;
+  virtual void setJSModulesUnbundle(
+    std::unique_ptr<JSModulesUnbundle> unbundle) override;
 
   virtual void callFunction(
     const std::string& moduleId,
@@ -80,17 +76,23 @@ public:
     const double callbackId,
     const folly::dynamic& arguments) override;
 
+  template <typename T>
+  Value callFunctionSync(
+      const std::string& module, const std::string& method, T&& args) {
+    return callFunctionSyncWithValue(
+      module, method, JSCValueEncoder<typename std::decay<T>::type>::toJSCValue(
+        m_context, std::forward<T>(args)));
+  }
+
   virtual void setGlobalVariable(
     std::string propName,
     std::unique_ptr<const JSBigString> jsonValue) override;
 
-  virtual std::string getDescription() override;
-
   virtual void* getJavaScriptContext() override;
 
-  virtual bool isInspectable() override;
-
+#ifdef WITH_JSC_MEMORY_PRESSURE
   virtual void handleMemoryPressure(int pressureLevel) override;
+#endif
 
   virtual void destroy() override;
 
@@ -101,7 +103,7 @@ private:
   std::shared_ptr<ExecutorDelegate> m_delegate;
   std::shared_ptr<bool> m_isDestroyed = std::shared_ptr<bool>(new bool(false));
   std::shared_ptr<MessageQueueThread> m_messageQueueThread;
-  std::unique_ptr<RAMBundleRegistry> m_bundleRegistry;
+  std::unique_ptr<JSModulesUnbundle> m_unbundle;
   JSCNativeModules m_nativeModules;
   folly::dynamic m_jscConfig;
   std::once_flag m_bindFlag;
@@ -112,19 +114,20 @@ private:
   folly::Optional<Object> m_callFunctionReturnResultAndFlushedQueueJS;
 
   void initOnJSVMThread() throw(JSException);
-  static bool isNetworkInspected(const std::string &owner, const std::string &app, const std::string &device);
+  // This method is experimental, and may be modified or removed.
+  Value callFunctionSyncWithValue(
+    const std::string& module, const std::string& method, Value value);
   void terminateOnJSVMThread();
   void bindBridge() throw(JSException);
   void callNativeModules(Value&&);
   void flush();
   void flushQueueImmediate(Value&&);
-  void loadModule(uint32_t bundleId, uint32_t moduleId);
+  void loadModule(uint32_t moduleId);
 
   String adoptString(std::unique_ptr<const JSBigString>);
 
   template<JSValueRef (JSCExecutor::*method)(size_t, const JSValueRef[])>
   void installNativeHook(const char* name);
-
   JSValueRef getNativeModule(JSObjectRef object, JSStringRef propertyName);
 
   JSValueRef nativeRequire(

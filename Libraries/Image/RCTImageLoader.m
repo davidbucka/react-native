@@ -1,8 +1,10 @@
 /**
  * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
  */
 
 #import <stdatomic.h>
@@ -46,30 +48,11 @@
     NSMutableArray *_pendingDecodes;
     NSInteger _scheduledDecodes;
     NSUInteger _activeBytes;
-  __weak id<RCTImageRedirectProtocol> _redirectDelegate;
 }
 
 @synthesize bridge = _bridge;
 
 RCT_EXPORT_MODULE()
-
-- (instancetype)init
-{
-  return [self initWithRedirectDelegate:nil];
-}
-
-+ (BOOL)requiresMainQueueSetup
-{
-    return NO;
-}
-
-- (instancetype)initWithRedirectDelegate:(id<RCTImageRedirectProtocol>)redirectDelegate
-{
-    if (self = [super init]) {
-        _redirectDelegate = redirectDelegate;
-    }
-    return self;
-}
 
 - (void)setUp
 {
@@ -83,7 +66,7 @@ RCT_EXPORT_MODULE()
 
 - (float)handlerPriority
 {
-    return 2;
+    return 1;
 }
 
 - (id<RCTImageCache>)imageCache
@@ -331,10 +314,7 @@ static UIImage *RCTResizeImageIfNeeded(UIImage *image,
 
         // Add missing png extension
         if (request.URL.fileURL && request.URL.pathExtension.length == 0) {
-            mutableRequest.URL = [request.URL URLByAppendingPathExtension:@"png"];
-        }
-        if (_redirectDelegate != nil) {
-            mutableRequest.URL = [_redirectDelegate redirectAssetsURL:mutableRequest.URL];
+            mutableRequest.URL = [NSURL fileURLWithPath:[request.URL.path stringByAppendingPathExtension:@"png"]];
         }
         request = mutableRequest;
     }
